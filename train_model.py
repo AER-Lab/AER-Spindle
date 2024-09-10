@@ -5,8 +5,6 @@ def train_model(model, criterion, optimizer, train_loader, epochs=10):
     for epoch in range(epochs):
         running_loss = 0.0
         for inputs, labels in train_loader:
-            # print("train_model - input shape", inputs.shape)
-            # print("train_model - label shape", labels.shape)
             optimizer.zero_grad()
             outputs = model(inputs)
             if outputs.size(0) != labels.size(0):

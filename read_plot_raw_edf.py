@@ -53,7 +53,3 @@ def read_plot_raw_edf(edf_file):
     
     plt.tight_layout()
     plt.show()
-
-# edf_file = r'Z:\migratedData\Lab\George\EEGtraining\EDF_examples\24Hrs_EDF_alika\Mouse2\4mice-230802-110646_Box2_512.edf'
-# # edf_file = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test\mouse1.edf'
-# read_plot_raw_edf(edf_file)

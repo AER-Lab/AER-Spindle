@@ -19,6 +19,7 @@ import os
 
 # Training Path
 path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
+# Prediction Path
 folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA'
 
 
@@ -61,9 +62,6 @@ target_tensor = torch.ones(21600,3, 24,160)
 
 
 data_shape = data.shape
-# print("Data shape: ", data_shape)
-# data shape is (21600, 3, 24, 160)
-# we want to extract 3 channels, 24 time points, 160 frequency points
 data_shape = data_shape[1:]
 
 target_tensor_shape = target_tensor.shape
@@ -71,17 +69,15 @@ target_tensor_shape = target_tensor.shape
 # Create DataLoader -DATA
 dataset = TensorDataset(data, all_labels)
 train_loader = DataLoader(dataset, batch_size=batch_size_num, shuffle=True)
-# 3.
-# # model should use data_shape as input_dim
+# 3. model should use data_shape as input_dim
 model = SpindleGraph(input_dim=data_shape, nb_class=num_classes, dropout_rate=drop_out_rate)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-# 4.
+# 4. Train Model
 train_model(model, criterion, optimizer, train_loader, epochs=epoch_num)
 
 print("Model trained successfully", model)
-# 5.
-# Save model weights
+# 5. Save model weights
 model_name = 'SPINDLE_model-ALIKA_Mouse8.pth'
 def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
@@ -89,26 +85,19 @@ def save_model_weights(model, filename):
 save_model_weights(model, model_name)
 print("Model weights saved successfully", model)
 
-# 6.
-# Load model weights
+# 6.Load model weights
 def load_model_weights(model, filename):
     model.load_state_dict(torch.load(filename))
     model.eval()
     return model
 
-# ? Load the model weights for CNN model
+#7. Load the model weights for CNN model
 model = load_model_weights(model, model_name)
 print("Model weights loaded successfully", model)
 
 
-
-# Prediction Path
-# example_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\post-918.edf'
-
-# Assuming load_data_prediction and predict_sleep_stages are already defined elsewhere
-
-
-array_files = ['Alika-Mouse1','Alika-Mouse2','Alika-Mouse3','Alika-Mouse4','Alika-Mouse5','Alika-Mouse6', 'post-1100', 'post-1324', 'post-1325' ,'post-1348', 'post-1356', 'post-1']
+# array_files is all the files in the folder_file_prediction
+array_files = os.listdir(folder_file_prediction)
 
 # Loop over the files specified in array_files
 for file_base in array_files:
