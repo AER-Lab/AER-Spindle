@@ -1,30 +1,3 @@
-# import torch
-
-# class_mapping = {
-#     0: "WAKE",
-#     1: "NREM",
-#     2: "REM",
-#     3: "Artifact"  # This is for error/unknown cases
-# }
-
-# def predict_sleep_stages(spectrograms, model):
-#     model.eval()  # Set model to evaluation mode
-#     predictions = []
-    
-#     with torch.no_grad():  # Disable gradient calculation
-#         num_datapoint = spectrograms.shape[0]  # Number of epochs
-#         for i in range(num_datapoint):
-#             epoch_spectrogram = torch.tensor(spectrograms[i]).unsqueeze(0)  # Add batch dimension
-#             output = model(epoch_spectrogram)
-            
-#             # Get the predicted class (assuming output is logits, apply softmax if necessary)
-#             # TODO: Look into prediction with +1
-#             predicted_class = output.argmax(dim=1).item()
-#             predicted_label = class_mapping.get(predicted_class , "Artifact")  # +1 to match class_mapping
-#             predictions.append(predicted_label)
-    
-#     return predictions
-
 import torch
 
 class_mapping = {

@@ -15,7 +15,7 @@ from sklearn.utils.multiclass import unique_labels
 from torch.optim.optimizer import Optimizer
 import torch
 import math
-logger = logging.getLogger(cnst.ROOT_LOGGER_STR + '.' + __name__)
+logger = logging.getLogger('Spindle-AER' + '.' + __name__)
 
 
 

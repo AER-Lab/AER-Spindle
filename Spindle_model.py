@@ -17,6 +17,12 @@ from read_plot_raw_edf import read_plot_raw_edf
 import os
 
 
+# Training Path
+path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
+folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA'
+
+
+
 learning_rate = 0.00005
 epoch_num = 5
 drop_out_rate = 0.5
@@ -46,8 +52,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
     'EMG-filtering': {'lfreq': 0.5, 'hfreq': 30}
 }
 
-# Training Path
-path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
+
 # load the data for preprocessing and plot spectrograms
 # 2.
 data, all_labels = load_data_and_labels(path_for_training, SPINDLE_PREPROCESSING_PARAMS)
@@ -101,7 +106,7 @@ print("Model weights loaded successfully", model)
 # example_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\post-918.edf'
 
 # Assuming load_data_prediction and predict_sleep_stages are already defined elsewhere
-folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA'
+
 
 array_files = ['Alika-Mouse1','Alika-Mouse2','Alika-Mouse3','Alika-Mouse4','Alika-Mouse5','Alika-Mouse6', 'post-1100', 'post-1324', 'post-1325' ,'post-1348', 'post-1356', 'post-1']
 

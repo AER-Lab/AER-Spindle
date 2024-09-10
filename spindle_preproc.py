@@ -5,10 +5,9 @@ import utils
 from utils import get_spectrograms as get_specs
 from utils import compress_spectrograms as compress
 from utils import compress_and_replicate_emg as comp_emg
-from constants import ROOT_LOGGER_STR
 
 
-logger = logging.getLogger(ROOT_LOGGER_STR + '.' + __name__)
+logger = logging.getLogger('Spindle-AER' + '.' + __name__)
 
 
 class SpindlePreproc:
