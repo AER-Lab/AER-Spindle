@@ -22,7 +22,7 @@ path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
 # Prediction Path
 folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA'
 
-
+model_name = 'SPINDLE_model-test.pth'
 
 learning_rate = 0.00005
 epoch_num = 5
@@ -78,12 +78,12 @@ train_model(model, criterion, optimizer, train_loader, epochs=epoch_num)
 
 print("Model trained successfully", model)
 # 5. Save model weights
-model_name = 'SPINDLE_model-ALIKA_Mouse8.pth'
+
 def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
 # ? Save the model weights for CNN model
-save_model_weights(model, model_name)
-print("Model weights saved successfully", model)
+# save_model_weights(model, model_name)
+# print("Model weights saved successfully", model)
 
 # 6.Load model weights
 def load_model_weights(model, filename):
@@ -92,8 +92,8 @@ def load_model_weights(model, filename):
     return model
 
 #7. Load the model weights for CNN model
-model = load_model_weights(model, model_name)
-print("Model weights loaded successfully", model)
+# model = load_model_weights(model, model_name)
+# print("Model weights loaded successfully", model)
 
 
 # array_files is all the files in the folder_file_prediction
@@ -102,6 +102,7 @@ array_files = os.listdir(folder_file_prediction)
 # Loop over the files specified in array_files
 for file_base in array_files:
     # Construct the full path for each EDF file
+    file_base = file_base.split('.')[0]
     example_file_prediction = os.path.join(folder_file_prediction, f"{file_base}.edf")
 
     # Load the data for prediction

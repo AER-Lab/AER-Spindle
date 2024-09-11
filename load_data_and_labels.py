@@ -60,7 +60,7 @@ def load_data_and_labels(folder_path, params):
 
         num_epochs = data.shape[0]
         # assert that num of epochs matches the num of labels
-        if len(labels1) != num_epochs:
+        if len(labels) != num_epochs:
             raise ValueError("Number of epochs does not match the number of labels", "Labels:",len(labels), "Epoch:", num_epochs, "File:", base_name)
 
  

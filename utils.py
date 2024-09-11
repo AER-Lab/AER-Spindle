@@ -2,7 +2,6 @@ import numpy as np
 from scipy import signal
 import mne
 import pyedflib
-import constants as cnst
 from os import environ as os_environ
 from pathlib import Path
 import logging
@@ -28,7 +27,7 @@ def setup_logger_to_std():
     f_format = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    root_logger = logging.getLogger(cnst.ROOT_LOGGER_STR)
+    root_logger = logging.getLogger('Spindle-AER')
     root_logger.setLevel(logging.DEBUG)
 
     handler = logging.StreamHandler(sys.stdout)
@@ -148,3 +147,11 @@ def make_epochs(spectrograms, num_epochs, epoch_size):
                 spectrograms[j][:, i * epoch_size:(i + 1) * epoch_size]
     
     return data
+def plot_spectrogram(spectrogram, title):
+    plt.figure()
+    plt.imshow(spectrogram, aspect='auto', origin='lower', cmap='jet')
+    plt.title(title)
+    plt.colorbar(label='Power (dB)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency (Hz)')
+    plt.show()
