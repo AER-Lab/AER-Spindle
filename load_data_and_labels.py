@@ -9,22 +9,6 @@ import torch
 from torch.utils.data import Dataset
 
 
-# TODO [COMPLETE]: replace torch with pytorch dataset -
-#? Class implementation of EEGDataset as a subclass of torch.utils.data.Dataset from the PyTorch library
-class EEGDataset(Dataset):
-    def __init__(self, spectrograms, labels):
-        self.spectrograms = spectrograms
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.spectrograms)
-
-    def __getitem__(self, idx):
-        spectrogram = self.spectrograms[idx]
-        label = self.labels[idx]
-        return torch.tensor(spectrogram, dtype=torch.float32), torch.tensor(label, dtype=torch.long)
-
-#? Function to map labels used for other dataset.
 
     
 def map_labels(label):
@@ -78,3 +62,7 @@ def load_data_and_labels(folder_path, params):
     all_labels = torch.tensor(all_labels, dtype=torch.long)
     
     return all_spectrograms, all_labels
+    
+if __name__ == "__main__":
+    # Optional: any testing or standalone logic goes here
+    print("Module imported, but not running load_data_and_labels")
