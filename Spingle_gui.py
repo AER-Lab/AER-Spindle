@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import font as tkfont
+from read_plot_raw_edf import read_plot_raw_edf
 
 # Function to handle folder selection and running stats/plots
 def run_stats_and_plots():
@@ -36,7 +37,7 @@ header_label.pack(pady=10)
 # Create buttons with custom styling
 button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 20, "height": 2}
 
-stats_button = tk.Button(root, text="Run Stats/Plots", command=run_stats_and_plots, **button_style)
+stats_button = tk.Button(root, text="Read & Plot RAW EDF Signal", command=run_stats_and_plots, **button_style)
 stats_button.pack(pady=10)
 
 large_function_button = tk.Button(root, text="Run Large Function", command=run_large_function, **button_style)
