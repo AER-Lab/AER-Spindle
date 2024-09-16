@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+SPINDLE_MODEL-*
+
+# txt files
+*.txt
+
 # C extensions
 *.so
 
