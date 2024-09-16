@@ -8,8 +8,6 @@ from preprocess_plot_spectrograms import preprocess_and_plot_edf
 import torch
 from torch.utils.data import Dataset
 
-
-
     
 def map_labels(label):
     if label == 'W' or label == 'W*' or label==2:
@@ -62,7 +60,7 @@ def load_data_and_labels(folder_path, params):
     all_labels = torch.tensor(all_labels, dtype=torch.long)
     
     return all_spectrograms, all_labels
-    
+
 if __name__ == "__main__":
     # Optional: any testing or standalone logic goes here
     print("Module imported, but not running load_data_and_labels")

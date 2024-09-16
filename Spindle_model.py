@@ -82,8 +82,8 @@ print("Model trained successfully", model)
 def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
 # ? Save the model weights for CNN model
-# save_model_weights(model, model_name)
-# print("Model weights saved successfully", model)
+save_model_weights(model, model_name)
+print("Model weights saved successfully", model)
 
 # 6.Load model weights
 def load_model_weights(model, filename):
@@ -92,8 +92,8 @@ def load_model_weights(model, filename):
     return model
 
 #7. Load the model weights for CNN model
-# model = load_model_weights(model, model_name)
-# print("Model weights loaded successfully", model)
+model = load_model_weights(model, model_name)
+print("Model weights loaded successfully", model)
 
 
 # array_files is all the files in the folder_file_prediction
@@ -106,7 +106,7 @@ for file_base in array_files:
     example_file_prediction = os.path.join(folder_file_prediction, f"{file_base}.edf")
 
     # Load the data for prediction
-    data = load_data_prediction(example_file_prediction, SPINDLE_PREPROCESSING_PARAMS)
+    data = load_data_prediction(example_file_prvediction, SPINDLE_PREPROCESSING_PARAMS)
 
     # Predict sleep stages
     predictions = predict_sleep_stages(data, model)
