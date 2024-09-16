@@ -151,6 +151,10 @@ def Prediction():
             prediction_csv_path = os.path.join(folder_file_prediction, f"{file_base}_predictions.csv")
             df.to_csv(prediction_csv_path, index=False, header=False)
             print(f"Predictions saved to {prediction_csv_path}")
+    
+    messagebox.showinfo("Prediction", "Predictions completed successfully.")
+
+    
 
 # Create the main window
 root = tk.Tk()
