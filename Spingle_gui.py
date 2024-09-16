@@ -39,7 +39,7 @@ drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
 
-expected_data_shape = (30,2,3,3)
+expected_data_shape = (2,24,160)
 
 # Function to handle folder selection and running stats/plots
 def Read_plot_EDF():
