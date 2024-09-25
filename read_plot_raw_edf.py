@@ -6,50 +6,53 @@ from pyedflib import highlevel
 # 1 = REM, 2 WAKe, 3 NREM
 def read_plot_raw_edf(edf_file):
     # Read EDF file
-    signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
+    try:
+        # Read EDF file
+        signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
+    except Exception as e:
+        print(f"An error occurred while reading the EDF file: {e}, Either this is not an EDF file or the file is corrupted.")
+        return None
 
     # Convert to DataFrame
     df = pd.DataFrame(signals).T
-    # Add header for each column, Column 0 = EEG1, Column 1 = EEG2, Column 2 = EMG
-    df.columns = ['EEG1', 'EMG']
+    print("Dataframe shape: ", df.shape)
+    # check how many channels/columns are in the dataframe /2 for pairs
+    channel_pairs = round(df.shape[1]/2,0)
+    if channel_pairs == 1:
+        print("There is ", channel_pairs,"pair of channels in the dataframe")
+    else:
+        print("There are ", channel_pairs,"pairs of channels in the dataframe")
     
-    # Extract sampling frequency from signal headers
     sample_frequency = meta_data[0]['sample_rate']
+    print("Sample frequency: ", sample_frequency, "Hz")
 
-    # Read from meta data
-    # print("All headers: ", meta_data, "\n", meta_data2)
-
-    # for each channel, print the label, dimension, sample rate
-    for i in range(len(meta_data)):
-        print(f"Channel {i} - Label: {meta_data[i]['label']}, Sample rate: {meta_data[i]['sample_rate']} Hz")
-
-    # Time vector for plotting
-    n_samples = signals[0].shape[0]
-    time = np.arange(n_samples) / sample_frequency
-
-    print("Total number of samples: ", n_samples)
-    print("Sample frequency: ", sample_frequency, "Hz, ")
-    print("Number of samples per channel: ", n_samples, "Divided by sample frequency: ",sample_frequency , "is ",n_samples/sample_frequency)
-    print("Total time is: ", n_samples/sample_frequency, " seconds", "||", n_samples/sample_frequency/60, " minutes were recorded", "||", n_samples/sample_frequency/3600, " hours were recorded")
-    
-    # Convert DataFrame to NumPy array for indexing
-    signals_np = df.to_numpy()
-    
-    # Plot each signal
-    plt.figure(figsize=(12, 8))
-    for i, column in enumerate(df.columns):
-        plt.subplot(len(df.columns), 1, i + 1)
-        plt.plot(time, signals_np[:, i])
-        # plot a line in the middle of the plot
-        plt.axhline(y=signals_np[:, i].mean(), color='k', linestyle='solid', linewidth=0.5)
-        # draw vertical lines at the beginning and end of the plot
-        plt.axvline(x=0, color='k', linestyle='solid', linewidth=0.5)
-        plt.axvline(x=n_samples/sample_frequency, color='k', linestyle='solid', linewidth=0.5)
-        # draw vertical line at the middle of the plot to indicate half of the recording
-        plt.axvline(x=n_samples/sample_frequency/2, color='r', linestyle='solid', linewidth=0.5)
-        plt.title(f"{column} - {meta_data[i]['dimension']}")
+    # for each pair, get the first and second channel and extract the data to plot
+    for i in range(0, df.shape[1], 2):
+        print("Pair: ", i, "Channel 1: ", i, "Channel 2: ", i+1)
+        # get the first channel
+        channel1 = df.iloc[:, i]
+        # get the second channel
+        channel2 = df.iloc[:, i+1]
+        # plot the first channel
+        plt.figure(figsize=(12, 8))  # create a new figure for each pair
+        plt.subplot(2, 1, 1)
+        plt.plot(channel1)
+        plt.title(f"Channel {i}")
         plt.xlabel('Time (s)')
-        plt.ylabel(f"Amplitude ({meta_data[i]['dimension']})")
-    
-    plt.tight_layout()
-    plt.show()
+        plt.ylabel(f"Amplitude")
+        ymin, ymax = plt.ylim()
+        yrange = ymax - ymin
+        plt.ylim(ymin, ymax + 0.025 * yrange)
+        # plot the second channel
+        plt.subplot(2, 1, 2)
+        plt.plot(channel2)
+        plt.title(f"Channel {i+1}")
+        plt.xlabel('Time (s)')
+        plt.ylabel(f"Amplitude")
+        ymin, ymax = plt.ylim()
+        yrange = ymax - ymin
+        plt.ylim(ymin, ymax + 0.025 * yrange)
+        plt.tight_layout()
+        plt.show()  # show the plot for the current pair
+
+read_plot_raw_edf(r"Z:\migratedData\Lab\George\Su-EEG-EDF-DATA\test\all_chan.edf")
