@@ -5,10 +5,10 @@ import pandas as pd
 import torch
 from spindle_preproc import SpindlePreproc
 from utils import plot_spectrogram
-from load_data_and_labels import load_data_and_labels
+from load_data_Training import load_data_and_labels
 from torch.utils.data import DataLoader, TensorDataset
 from train_model import train_model
-from spindle_graph import SpindleGraph
+from Spindle import SpindleGraph
 import torch.nn as nn
 import torch.optim as optim
 from load_data_prediction import load_data_prediction
@@ -106,7 +106,7 @@ for file_base in array_files:
     example_file_prediction = os.path.join(folder_file_prediction, f"{file_base}.edf")
 
     # Load the data for prediction
-    data = load_data_prediction(example_file_prvediction, SPINDLE_PREPROCESSING_PARAMS)
+    data = load_data_prediction(example_file_prediction, SPINDLE_PREPROCESSING_PARAMS)
 
     # Predict sleep stages
     predictions = predict_sleep_stages(data, model)

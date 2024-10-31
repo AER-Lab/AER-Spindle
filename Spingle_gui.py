@@ -2,10 +2,10 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 from tkinter import font as tkfont
 from read_plot_raw_edf import read_plot_raw_edf
-from load_data_and_labels import load_data_and_labels
+from load_data_Training import load_data_and_labels
 from train_model import train_model
 from torch.utils.data import DataLoader, TensorDataset
-from spindle_graph import SpindleGraph
+from Spindle import SpindleGraph
 import torch.nn as nn
 import torch.optim as optim
 import torch
