@@ -1,6 +1,8 @@
 import numpy as np
 from spindle_preproc import SpindlePreproc
-from utils import setup_logger_to_std,plot_spectrogram
+from utils import setup_logger_to_std
+# if you want to plot the spectrograms
+from utils import plot_spectrogram
 import pyedflib
 
 

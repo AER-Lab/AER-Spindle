@@ -1,4 +1,3 @@
-import torch
 from utils import classification_accuracy
 
 def train_model(model, criterion, optimizer, train_loader, epochs=10):

@@ -1,10 +1,6 @@
-# Function to load all data
-import os
 import numpy as np
-import pandas as pd
 import torch
 from preprocess_plot_spectrograms import preprocess_and_plot_edf
-# Function to map labels
 
 
 def load_data_prediction(file, params):

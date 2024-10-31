@@ -1,20 +1,10 @@
 import numpy as np
 from scipy import signal
-import mne
-import pyedflib
-from os import environ as os_environ
-from pathlib import Path
 import logging
 import sys
-import time
-from sklearn.metrics import confusion_matrix
-from sklearn.utils.multiclass import unique_labels
 import matplotlib.pyplot as plt
-from sklearn.utils.multiclass import unique_labels
-from torch.optim.optimizer import Optimizer
-import torch
-import math
-logger = logging.getLogger('Spindle-AER' + '.' + __name__)
+
+logger = logging.getLogger('AER-Spindle' + '.' + __name__)
 
 
 def classification_accuracy(predictions, labels):

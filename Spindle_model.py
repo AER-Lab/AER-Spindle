@@ -1,10 +1,5 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from pyedflib import highlevel
 import pandas as pd
 import torch
-from spindle_preproc import SpindlePreproc
-from utils import plot_spectrogram
 from load_data_Training import load_data_and_labels
 from torch.utils.data import DataLoader, TensorDataset
 from train_model import train_model
@@ -13,7 +8,6 @@ import torch.nn as nn
 import torch.optim as optim
 from load_data_prediction import load_data_prediction
 from predict_sleep_stages import predict_sleep_stages
-from read_plot_raw_edf import read_plot_raw_edf
 import os
 
 
