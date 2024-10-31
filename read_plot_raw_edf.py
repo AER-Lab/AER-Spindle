@@ -54,5 +54,3 @@ def read_plot_raw_edf(edf_file):
         plt.ylim(ymin, ymax + 0.025 * yrange)
         plt.tight_layout()
         plt.show()  # show the plot for the current pair
-
-read_plot_raw_edf(r"Z:\migratedData\Lab\George\Su-EEG-EDF-DATA\test\all_chan.edf")
