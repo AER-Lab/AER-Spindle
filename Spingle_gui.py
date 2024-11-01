@@ -13,6 +13,7 @@ import os
 import pandas as pd
 from load_data_prediction import load_data_prediction
 from predict_sleep_stages import predict_sleep_stages
+import time
 
 
 
@@ -84,6 +85,8 @@ def Training():
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+        start_time = time.time()
+
         # Create progress bar window
         progress_window = tk.Toplevel()
         progress_window.title("Training Progress")
@@ -97,8 +100,12 @@ def Training():
         progress_label = tk.Label(progress_window, text="0% completed")
         progress_label.pack()
 
+         # Label for estimated time remaining
+        time_label = tk.Label(progress_window, text="Estimated time remaining: Calculating...")
+        time_label.pack()
+
         # Step 7: Train the model with progress bar
-        train_model(model, criterion, optimizer, train_loader, epochs=epoch_num, progress=progress, label=progress_label)
+        train_model(model, criterion, optimizer, train_loader, epochs=epoch_num, progress=progress, label=progress_label, time_label=time_label, start_time=start_time)
 
         # Step 8: Save the model weights
         torch.save(model.state_dict(), model_name)
@@ -229,7 +236,7 @@ header_label.pack(pady=10)
 # Create buttons with custom styling
 button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 25, "height": 8}
 
-read_raw_edf_button = tk.Button(root, text="Read & Plot RAW EDF Signal", command=Read_plot_EDF, **button_style)
+read_raw_edf_button = tk.Button(root, text="Plot Raw EDF Data", command=Read_plot_EDF, **button_style)
 read_raw_edf_button.pack(pady=10)
 
 Training_button = tk.Button(root, text="Training", command=Training, **button_style)

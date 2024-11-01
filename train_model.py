@@ -1,12 +1,13 @@
 from utils import classification_accuracy
-
-def train_model(model, criterion, optimizer, train_loader, epochs=10, progress=None, label=None):
+import time
+def train_model(model, criterion, optimizer, train_loader, epochs=10, progress=None, label=None, time_label=None, start_time=None):
     total_batches = len(train_loader)
 
     for epoch in range(epochs):
         model.train()
         running_loss = 0.0
         running_accuracy = 0.0  # Track accuracy across batches
+        epoch_start_time = time.time()
 
         for batch_idx, (inputs, labels) in enumerate(train_loader):
             optimizer.zero_grad()
@@ -40,6 +41,23 @@ def train_model(model, criterion, optimizer, train_loader, epochs=10, progress=N
         epoch_accuracy = running_accuracy / total_batches
 
         print(f"Epoch {epoch+1}, Loss: {epoch_loss:.4f}, Accuracy: {epoch_accuracy:.4f}")
+
+         # Calculate elapsed time and estimate time remaining
+        elapsed_time = time.time() - start_time
+        avg_time_per_epoch = elapsed_time / (epoch + 1)
+        remaining_epochs = epochs - (epoch + 1)
+        estimated_time_remaining = avg_time_per_epoch * remaining_epochs
+
+         # Format estimated time remaining for display
+        if estimated_time_remaining < 60:
+            time_remaining_text = f"{estimated_time_remaining:.2f} seconds"
+        elif estimated_time_remaining < 3600:
+            time_remaining_text = f"{estimated_time_remaining / 60:.2f} minutes"
+        else:
+            time_remaining_text = f"{estimated_time_remaining / 3600:.2f} hours"
+
+        time_label.config(text=f"Estimated time remaining: {time_remaining_text}")
+        progress.update()
 
     print("Training complete!")
     return model
