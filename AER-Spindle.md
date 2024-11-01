@@ -1,25 +1,21 @@
 # AER Lab Documentation - Spindle Method for Scoring Sleep States in Mice
 
 ## Introduction
-The AER Lab has developed a software tool and GU for scoring sleep states in mice using a customized version of the Spindle method. 
-This version will read a folder with equal EDF files [EEG/EMG] to CSV files [Time/Label] and convert it to a data set. This dataset will be fed automatically into the model based on the given shape. the model will be trained using the same parameters as SPINDLE, saving the model weights, loading the model weights and is then used to predict a given EDF producing a CSV file of the predictions. Lastly an compare/evaluation tool is provided to calculate the performance of the model across predicted files.
-The implementation of this customized version was influenced and inspired by the work done in the [amibeuret/spindle](https://github.com/amibeuret/spindle) repository.
-
-This documentation provides an overview of the AER Lab and instructions on how to use it effectively.
+The AER Lab introduces a customized implementation of the SPINDLE method (Sleep Phase Identification with Neural Networks for Domain-invariant LEarning), originally developed by Miladinović et al. (2019), which achieved remarkable accuracy rates of up to 99% in rodent sleep scoring1. Our adaptation maintains the core methodological principles of the original SPINDLE framework while introducing a streamlined graphical user interface for enhanced accessibility and workflow automation. The system processes paired EEG/EMG recordings stored in EDF format alongside their corresponding time-labeled CSV files, automatically converting them into structured datasets suitable for model training and prediction. Building upon SPINDLE's CNN-HMM architecture, which was specifically designed to remain agnostic to changes in sleep patterns across both time and frequency dimensions, our implementation preserves the original model parameters while adding convenient features for model weight management and automated prediction generation. The tool's preprocessing pipeline incorporates the same sophisticated signal processing techniques used in the original framework, including time-frequency domain operations and multi-channel analysis inspired by automatic speech recognition systems. Following the successful validation approach of the original SPINDLE method, our system includes a comprehensive evaluation suite that enables detailed performance analysis and comparison between model predictions and expert scoring. Drawing inspiration from the amibeuret/spindle repository, we have enhanced the framework with additional user-centric features while maintaining the high accuracy standards and physiological plausibility that made the original method so effective.
 
 ## Installation
-To install the AER Lab, follow these steps:
+Create a Conda or Virtual Environment for this project, clone the codebase, and install the requirements:
+    1. conda create -n SPINDLE python=3.9
+        OR
+        python -m venv SPINDLE
+    2.  clone the codebase
+    3.  pip install -r requirements.txt
 
-1. Clone the AER Lab repository from GitHub: `git clone https://github.com/aer-lab/aer-lab.git`
-2. Install the required dependencies using pip: `pip install -r requirements.txt`
-3. Ensure you have the right number of Epochs-to-labels
-4. CSV files should not have headers
+## Quick start - GUI
+A GUI-based implementation of the SPINDLE method for plotting raw data, training models, and automated sleep scoring in mice.
 
-## Usage
-To use the AER Lab for scoring sleep states in mice, follow these steps:
 
-1. Prepare the input data in the required format.
-2. Run the AER Lab script: `python aer_lab.py --input <input_file> --output <output_file>`
-3. The AER Lab will process the input data and generate the output file with the sleep state scores.
+
+
 
 

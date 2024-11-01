@@ -5,7 +5,7 @@ from preprocess_plot_spectrograms import preprocess_and_plot_edf
 
 def load_data_prediction(file, params):
     all_spectrograms = []
-    eeg_spectrograms = []
+    eeg_spectrogram = []
     emg_spectrogram = []
     
     eeg_file = file
@@ -13,10 +13,10 @@ def load_data_prediction(file, params):
     # Preprocess the EEG data
     data = preprocess_and_plot_edf(eeg_file, params)
     print("Data Shape:", data.shape)
-    eeg1_spectrogram = data[0]
+    eeg_spectrogram = data[0]
     emg_spectrogram = data[1]
 
-    spectrograms = np.stack([eeg1_spectrogram, emg_spectrogram])
+    spectrograms = np.stack([eeg_spectrogram, emg_spectrogram])
     
     # Append to list
     all_spectrograms.append(spectrograms)
