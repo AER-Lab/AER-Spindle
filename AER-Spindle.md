@@ -1,21 +1,72 @@
-# AER Lab Documentation - Spindle Method for Scoring Sleep States in Mice
+# Introduction
+The AER Lab introduces a customized implementation of the SPINDLE method (Sleep Phase Identification with Neural Networks for Domain-invariant LEarning), originally developed by Miladinović et al. (2019), which achieved remarkable accuracy rates of up to 99% in rodent sleep scoring. Our adaptation maintains the core methodological principles of the original SPINDLE framework while introducing a streamlined graphical user interface for enhanced accessibility and workflow automation with an accuracy rate of up to 97.25%. The system processes paired EEG/EMG recordings stored in EDF format alongside their corresponding time-labeled CSV files, automatically converting them into structured datasets suitable for model training.
+# Architecture
+- Building upon SPINDLE's CNN-HMM architecture 
+    - our implementation:
+        - Remains agnostic to changes in sleep patterns across time and frequency dimensions
+        - Preserves original model parameters
+        - Adds convenient features for model weight management
+        - Enables automated prediction generation1
+        - Signal Processing
+        - The preprocessing pipeline incorporates sophisticated techniques:
+        - Time-frequency domain operations
+        - Multi-channel analysis inspired by ASR systems
+        - Advanced artifact detection and handling1
+# Installation - Environment Setup
 
-## Introduction
-The AER Lab introduces a customized implementation of the SPINDLE method (Sleep Phase Identification with Neural Networks for Domain-invariant LEarning), originally developed by Miladinović et al. (2019), which achieved remarkable accuracy rates of up to 99% in rodent sleep scoring1. Our adaptation maintains the core methodological principles of the original SPINDLE framework while introducing a streamlined graphical user interface for enhanced accessibility and workflow automation. The system processes paired EEG/EMG recordings stored in EDF format alongside their corresponding time-labeled CSV files, automatically converting them into structured datasets suitable for model training and prediction. Building upon SPINDLE's CNN-HMM architecture, which was specifically designed to remain agnostic to changes in sleep patterns across both time and frequency dimensions, our implementation preserves the original model parameters while adding convenient features for model weight management and automated prediction generation. The tool's preprocessing pipeline incorporates the same sophisticated signal processing techniques used in the original framework, including time-frequency domain operations and multi-channel analysis inspired by automatic speech recognition systems. Following the successful validation approach of the original SPINDLE method, our system includes a comprehensive evaluation suite that enables detailed performance analysis and comparison between model predictions and expert scoring. Drawing inspiration from the amibeuret/spindle repository, we have enhanced the framework with additional user-centric features while maintaining the high accuracy standards and physiological plausibility that made the original method so effective.
+## Option 1: Conda Environment
+```
+- conda create -n SPINDLE python=3.9
+- conda activate SPINDLE
+```
 
-## Installation
-Create a Conda or Virtual Environment for this project, clone the codebase, and install the requirements:
-    1. conda create -n SPINDLE python=3.9
-        OR
-        python -m venv SPINDLE
-    2.  clone the codebase
-    3.  pip install -r requirements.txt
+##  Option 2: Virtual Environment
+```
+- python -m venv SPINDLE
+- source SPINDLE/bin/activate  # Linux/Mac
+- .\SPINDLE\Scripts\activate   # Windows
+```
 
-## Quick start - GUI
-A GUI-based implementation of the SPINDLE method for plotting raw data, training models, and automated sleep scoring in mice.
+## Repository Setup
+1. ###  Clone repository
+```
+- git clone https://github.com/gsaaad/SPINDLE_Sleep_Prediction
+- cd SPINDLE_Sleep_Prediction
+```
+
+# Install dependencies
+```
+- pip install -r requirements.txt
+```
+
+# Usage - GUI Interface
+- Launch the graphical interface:
+```
+    - python Spindle_gui.py
+```
+
+# Core Features
+- Data Visualization: Plot and analyze raw EEG/EMG data
+- Model Training: Train custom models using labeled datasets
+- Sleep Scoring: Automated prediction using pre-trained or custom models
+- Data Analysis
+- Read and plot raw data
+- Visualize spectrograms
+- Review signal quality
+- Model Training
+- Select training data folder
+- Configure model parameters
+- Train custom models
+- Sleep Scoring
+- Load model weights
+- Process new recordings
+- Generate predictions
+- Compare Performance
+- Achieves up to 97.25% agreement with expert scoring
+- Efficient processing of large datasets
 
 
-
-
-
-
+# Acknowledgments - Special thanks to:
+- George Saad and the AER Lab team
+- Original SPINDLE method developers (Miladinović et al., 2019)
+- amibeuret/spindle repository contributors
