@@ -1,8 +1,9 @@
 # Introduction
 The AER Lab introduces a customized implementation of the SPINDLE method (Sleep Phase Identification with Neural Networks for Domain-invariant LEarning), originally developed by Miladinović et al. (2019), which achieved remarkable accuracy rates of up to 99% in rodent sleep scoring. Our adaptation maintains the core methodological principles of the original SPINDLE framework while introducing a streamlined graphical user interface for enhanced accessibility and workflow automation with an accuracy rate of up to 97.25%. The system processes paired EEG/EMG recordings stored in EDF format alongside their corresponding time-labeled CSV files, automatically converting them into structured datasets suitable for model training.
+
 # Architecture
 - Building upon SPINDLE's CNN-HMM architecture 
-    - our implementation:
+    - Our implementation:
         - Remains agnostic to changes in sleep patterns across time and frequency dimensions
         - Preserves original model parameters
         - Adds convenient features for model weight management
@@ -13,7 +14,9 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
         - Multi-channel analysis inspired by ASR systems
         - Advanced artifact detection and handling1
 # Installation - Environment Setup
-
+### Download:
+- The latest stable python version [3.x.x]
+- Git [https://git-scm.com/downloads] - If cloning the repo, otherwise you can download the zip folder directly and extract.
 ## Option 1: Conda Environment
 ```
 - conda create -n SPINDLE python=3.9
@@ -30,7 +33,7 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
 ## Repository Setup
 1. ###  Clone repository
 ```
-- git clone https://github.com/gsaaad/SPINDLE_Sleep_Prediction
+- git clone https://github.com/AER-Lab/AER-Spindle.git
 - cd SPINDLE_Sleep_Prediction
 ```
 
