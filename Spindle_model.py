@@ -52,7 +52,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
 # 2.
 data, all_labels = load_data_and_labels(path_for_training, SPINDLE_PREPROCESSING_PARAMS)
 print("-----------------------------------------------------------------------------------------------")
-target_tensor = torch.ones(21600,3, 24,160)
+target_tensor = torch.ones(21600,2, 24,160)
 
 
 data_shape = data.shape
@@ -76,7 +76,7 @@ print("Model trained successfully", model)
 def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
 # ? Save the model weights for CNN model
-save_model_weights(model, model_name)
+# save_model_weights(model, model_name)
 print("Model weights saved successfully", model)
 
 # 6.Load model weights

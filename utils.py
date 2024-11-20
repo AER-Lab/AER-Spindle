@@ -69,6 +69,7 @@ def get_spectrograms(eegs, srate, window, stride, mode='magnitude'):
 
 def compress_spectrograms(eeg_specs, srate, window,
                           lowcutoff=0.5, highcutoff=12):
+    print("Compressing spectrograms..", "Low Cutoff: ", lowcutoff, "High Cutoff: ", highcutoff)
     nu = np.fft.rfftfreq(window, 1.0 / srate)
 
     new_specs = []
@@ -79,12 +80,15 @@ def compress_spectrograms(eeg_specs, srate, window,
     new_specs = np.array(new_specs)
     if len(new_specs.shape) < 2:
         new_specs = new_specs[np.newaxis, ...]
+
+    
     return np.array(new_specs)
 
 
 def compress_and_replicate_emg(emg_specs, srate, window,
                                lowcutoff=2, highcutoff=30,
                                replicate=1):
+    print("Compressing and replicating EMG spectrograms..", "Low Cutoff: ", lowcutoff, "High Cutoff: ", highcutoff)
     nu = np.fft.rfftfreq(window, 1.0 / srate)
 
     new_emg_specs = np.zeros(
@@ -120,6 +124,7 @@ def add_neighbors(spectrograms, num_neighbors):
             aug_data[i, :, :, j * length:(j + 1) * length] = \
                 spectrograms[int((i + j - int(num_neighbors / 2)) %
                                  len(spectrograms)), :, :, :]
+    print("Adding neighbors to the spectrograms..", "Number of neighbors: ", num_neighbors, "Spectrogram shape: ", aug_data.shape)
 
     return aug_data
 
@@ -135,6 +140,8 @@ def make_epochs(spectrograms, num_epochs, epoch_size):
         for j in range(len(spectrograms)):
             data[i, j, :, :] = \
                 spectrograms[j][:, i * epoch_size:(i + 1) * epoch_size]
+            
+    print("Making epochs..", "Number of epochs: ", num_epochs, "Spectrogram shape: ", data.shape)
     
     return data
 def plot_spectrogram(spectrogram, title):

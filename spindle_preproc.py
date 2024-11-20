@@ -64,6 +64,9 @@ class SpindlePreproc:
                                    highcutoff=self.emg_filtering['hfreq'],
                                    replicate=np.shape(eeg_spectrograms)[1])
         
+        print("COMPRESS-SPEC-Spectrogram EEG Shape: ", eeg_spectrograms.shape)
+        print("COMPRESS-SPEC-Spectrogram EMG Shape: ", emg_spectrogram.shape)
+        
         # Concatenate the EEG and EMG spectrograms
         specs = [x for x in [eeg_spectrograms, emg_spectrogram] if x.size > 0]
         specs = np.concatenate(specs, axis=0)
@@ -72,12 +75,13 @@ class SpindlePreproc:
         print("NORMALIZE-SPEC-Spectrogram shapes: ", specs.shape)
 
         samples_per_epoch = int(self.time_interval * srate)
+        print("Samples per epoch which is time interval * sample rate: ", self.time_interval, "*", srate, "=", samples_per_epoch)
         # This is the results of a spectrogram with this stride
         epoch_size = samples_per_epoch // self.stride
         num_epochs = len(all_signals[0]) // samples_per_epoch
         print("Samples per Epoch is: ", samples_per_epoch)
-        print("Epoch Size is: ", epoch_size)
-        print("Number of Epochs is: ", num_epochs)
+        print("Epoch Size is calculated by dividing samples per epoch by stride: ", samples_per_epoch, "/", self.stride, "=", epoch_size)
+        print("Number of Epochs is calculated by dividing the length of the signal by samples per epoch: ", len(all_signals[0]), "/", samples_per_epoch, "=", num_epochs)
         data = utils.make_epochs(specs, num_epochs, epoch_size)
         data = utils.add_neighbors(data, self.num_neighbors)
         return data
