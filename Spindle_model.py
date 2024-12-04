@@ -9,14 +9,17 @@ import torch.optim as optim
 from load_data_prediction import load_data_prediction
 from predict_sleep_stages import predict_sleep_stages
 import os
+import tkinter as tk
+from tkinter import ttk
+import time
 
 
 # Training Path
 path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
 # Prediction Path
-folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA'
+folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\predictions'
 
-model_name = 'SPINDLE_model-test.pth'
+model_name = 'SPINDLE_model_MM.pth'
 
 learning_rate = 0.00005
 epoch_num = 5
@@ -67,8 +70,26 @@ train_loader = DataLoader(dataset, batch_size=batch_size_num, shuffle=True)
 model = SpindleGraph(input_dim=data_shape, nb_class=num_classes, dropout_rate=drop_out_rate)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+start_time = time.time()
+# Create progress bar window
+progress_window = tk.Toplevel()
+progress_window.title("Training Progress")
+progress_window.geometry("400x100")
+
+# Progress bar widget
+progress = ttk.Progressbar(progress_window, orient="horizontal", length=300, mode="determinate")
+progress.pack(pady=20)
+
+# Label to display progress percentage
+progress_label = tk.Label(progress_window, text="0% completed")
+progress_label.pack()
+
+    # Label for estimated time remaining
+time_label = tk.Label(progress_window, text="Estimated time remaining: Calculating...")
+time_label.pack()
+
 # 4. Train Model
-train_model(model, criterion, optimizer, train_loader, epochs=epoch_num)
+train_model(model, criterion, optimizer, train_loader, epochs=epoch_num, progress=progress, label=progress_label, time_label=time_label, start_time=start_time)
 
 print("Model trained successfully", model)
 # 5. Save model weights
@@ -77,7 +98,7 @@ def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
 # ? Save the model weights for CNN model
 # save_model_weights(model, model_name)
-print("Model weights saved successfully", model)
+# print("Model weights saved successfully", model)
 
 # 6.Load model weights
 def load_model_weights(model, filename):

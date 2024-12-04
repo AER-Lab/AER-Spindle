@@ -66,7 +66,7 @@ def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_na
     return overall_accuracy, class_accuracy, misclassification_matrix
 
 # Setup the Excel writer
-folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\Spindle-Prediction-Compare\1Mouse_pre\mdl_2733"
+folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\MM_25Hz-50Hz_0.5Hz-24HzEEG"
 excel_path = os.path.join(folder_path, "model_comparison_results.xlsx")
 prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
 

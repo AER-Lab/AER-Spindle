@@ -34,6 +34,7 @@ class SpindlePreproc:
         print("Spindle Preproc - ALL SIGNALS SHAPE--RAW",all_signals.shape)
         # Downsample the signals to the target sample rate
         downsampled_signals = []
+        print("SIGNAL HEADER ###: ", signal_header)
         for i, sig in enumerate(all_signals):
             srate = signal_header[i]['sample_rate']
             if srate != self.target_srate:
