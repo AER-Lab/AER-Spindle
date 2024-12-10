@@ -17,8 +17,6 @@ def plot_confusion_matrix(conf_matrix, title):
     plt.ylabel('True Label')
     plt.show()
 
-import matplotlib.pyplot as plt
-
 def plot_class_accuracy(class_accuracy, title):
     # Create the bar plot
     ax = class_accuracy.plot(kind='bar', color='skyblue', figsize=(10, 10))
@@ -38,8 +36,6 @@ def plot_class_accuracy(class_accuracy, title):
                     textcoords='offset points')  # Use offset points to position the text
 
     plt.show()
-
-
 
 def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name):
     # Load the CSV files
@@ -63,7 +59,12 @@ def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_na
 
     misclassification_matrix = pd.crosstab(combined['Label'], combined['Prediction'], normalize='index') * 100
 
-    return overall_accuracy, class_accuracy, misclassification_matrix
+    # Extract values for NR, R, and W
+    nr_value = misclassification_matrix.at['NR', 'NR'] if 'NR' in misclassification_matrix.index and 'NR' in misclassification_matrix.columns else 0
+    r_value = misclassification_matrix.at['R', 'R'] if 'R' in misclassification_matrix.index and 'R' in misclassification_matrix.columns else 0
+    w_value = misclassification_matrix.at['W', 'W'] if 'W' in misclassification_matrix.index and 'W' in misclassification_matrix.columns else 0
+
+    return overall_accuracy, class_accuracy, misclassification_matrix, nr_value, r_value, w_value
 
 # Setup the Excel writer
 folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\MM_25Hz-50Hz_0.5Hz-24HzEEG"
@@ -78,22 +79,19 @@ with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
         label_file = os.path.join(folder_path, base_name + '.csv')
         if os.path.exists(label_file):
             sheet_name = base_name  # Sheet name based on file base name
-            overall_accuracy, class_accuracy, misclassification_matrix = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
+            overall_accuracy, class_accuracy, misclassification_matrix, nr_value, r_value, w_value = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
             # Compute the confusion matrix for the current file
             # Accumulate the confusion matrices
 
             print("Confusion matrix for {}: \n{}".format(sheet_name, misclassification_matrix))
-
 
             if combined_confusion_matrix is None:
                 combined_confusion_matrix = misclassification_matrix
             else:
                 combined_confusion_matrix += misclassification_matrix
 
-            
             plot_confusion_matrix(misclassification_matrix, f"Confusion Matrix for {sheet_name}")
             # plot_class_accuracy(class_accuracy, f"Class Accuracy for {sheet_name}")
-
 
             average_across_files.append(overall_accuracy)
             print("Overall Accuracy: {:.2f}%".format(overall_accuracy))
@@ -103,7 +101,10 @@ with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
             results = pd.DataFrame({
                 'Overall Accuracy': [overall_accuracy],
                 'Class Accuracy': [class_accuracy.to_dict()],
-                'Misclassification Matrix': [misclassification_matrix.to_dict()]
+                'Misclassification Matrix': [misclassification_matrix.to_dict()],
+                'NR Value': [nr_value],
+                'R Value': [r_value],
+                'W Value': [w_value]
             })
             
             results.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -111,7 +112,6 @@ with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
         # Normalize the combined confusion matrix again to ensure it's a proper percentage
         combined_confusion_matrix = combined_confusion_matrix.div(combined_confusion_matrix.sum(axis=1), axis=0) * 100
         plot_confusion_matrix(combined_confusion_matrix, "Combined Confusion Matrix Across All Files")
-
 
     if average_across_files:
         average_accuracy = sum(average_across_files) / len(average_across_files)
@@ -127,7 +127,6 @@ with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
         plt.ylabel("Accuracy (%)")
         plt.ylim(0, 100)
         plt.show()
-    
 
 # define a function that visually compares incorrect/mismatched predictions with the actual labels, color-coding the mismatches on a plot
 

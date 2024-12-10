@@ -19,7 +19,7 @@ path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
 # Prediction Path
 folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\predictions'
 
-model_name = 'SPINDLE_model_MM.pth'
+model_name = 'SPINDLE_model-MM_25-50Hz_24Hz.pth'
 
 learning_rate = 0.00005
 epoch_num = 5
