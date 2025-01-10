@@ -19,7 +19,7 @@ path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
 # Prediction Path
 folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\predictions'
 
-model_name = 'SPINDLE_model-MM_25-50Hz_24Hz.pth'
+model_name = 'SPINDLE_model-MM_.5Hz-100Hz.pth'
 
 learning_rate = 0.00005
 epoch_num = 5
@@ -36,7 +36,7 @@ num_classes = 4
 # params for preprocessor based on paper
 SPINDLE_PREPROCESSING_PARAMS = {
     'name': 'SpindlePreproc',
-    # Sample rate to resample the data to standardize the input - ADA 256
+    # Sample rate to resample the data to standardize the input
     'target_srate': 128,
     # stride is the number of samples to move the window forward by
     'spectrogram-stride': 16,
@@ -45,7 +45,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
     # num_neighbors is the number of neighboring epochs to include for context. 4 means, 2 on each side (including the current epoch, so total 5)
     'num_neighbors': 4,
     # EEG-filtering and EMG-filtering are dictionaries with 'lfreq' and 'hfreq' keys
-    # EEG filter between 0.5 and 24 Hz, EMG filter between 0.5 and 30
+    # EEG filter between 0.5 and 12 Hz, EMG filter between 0.5 and 30
     'EEG-filtering': {'lfreq': 0.5, 'hfreq': 12},
     'EMG-filtering': {'lfreq': 0.5, 'hfreq': 30}
 }
@@ -126,8 +126,9 @@ for file_base in array_files:
     # Predict sleep stages
     predictions = predict_sleep_stages(data, model)
 
-    # Save the predictions to a CSV file
-    df = pd.DataFrame(predictions, columns=['Prediction'])
+    # Save the predictions to a CSV file with timestamps
+    timestamps = [i * SPINDLE_PREPROCESSING_PARAMS['time_interval'] for i in range(len(predictions))]
+    df = pd.DataFrame({'Timestamp': timestamps, 'Prediction': predictions})
     prediction_csv_path = os.path.join(folder_file_prediction, f"{file_base}_predictions.csv")
     df.to_csv(prediction_csv_path, index=False, header=False)
     print(f"Predictions saved to {prediction_csv_path}")

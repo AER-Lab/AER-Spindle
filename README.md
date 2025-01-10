@@ -15,11 +15,12 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
         - Advanced artifact detection and handling1
 # Installation - Environment Setup
 ### Download:
-- The latest stable python version [3.x.x]
+- The latest stable python version [3.1.x]
 - Git [https://git-scm.com/downloads] - If cloning the repo, otherwise you can download the zip folder directly and extract.
+- Conda/mini conda - If usins this method.
 ## Option 1: Conda Environment
 ```
-- conda create -n SPINDLE python=3.9
+- conda create -n SPINDLE python=3.10
 - conda activate SPINDLE
 ```
 
