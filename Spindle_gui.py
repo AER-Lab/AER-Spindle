@@ -11,6 +11,7 @@ import torch.optim as optim
 import torch
 import os
 import pandas as pd
+from compare_prediction_accuracy import compare_files
 from load_data_prediction import load_data_prediction
 from predict_sleep_stages import predict_sleep_stages
 import time
@@ -41,6 +42,33 @@ batch_size_num = 100
 num_classes = 4
 
 expected_data_shape = (2,24,160)
+
+
+# Tooltip class
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tip_window = None
+        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event=None):
+        if self.tip_window or not self.text:
+            return
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 25
+        self.tip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, background="#ffffe0", relief=tk.SOLID, borderwidth=1, font=("tahoma", "8"))
+        label.pack(ipadx=1)
+
+    def hide_tooltip(self, event=None):
+        if self.tip_window:
+            self.tip_window.destroy()
+            self.tip_window = None
 
 # Function to handle folder selection and running stats/plots
 def Read_plot_EDF():
@@ -222,7 +250,7 @@ def Prediction():
 # Create the main window
 root = tk.Tk()
 root.title("AER-Lab Model Building")
-root.geometry("600x1000")
+root.geometry("600x750")
 root.configure(bg='#2E4053')
 
 # Custom Font
@@ -233,9 +261,12 @@ header_label = tk.Label(root, text="Mouse Sleep States Analysis", font=tkfont.Fo
                         fg="#F7DC6F", bg='#2E4053')
 header_label.pack(pady=10)
 
-# Create buttons with custom styling
-button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 25, "height": 8}
+# Create buttons with custom styling -old
+button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 25, "height": 4}
 
+
+
+# Add buttons
 read_raw_edf_button = tk.Button(root, text="Plot Raw EDF Data", command=Read_plot_EDF, **button_style)
 read_raw_edf_button.pack(pady=10)
 
@@ -244,6 +275,15 @@ Training_button.pack(pady=10)
 
 Prediction_button = tk.Button(root, text="Prediction", command=Prediction, **button_style)
 Prediction_button.pack(pady=10)
+
+compare_button = tk.Button(root, text="Compare Prediction to Label", command=compare_files, **button_style)
+compare_button.pack(pady=10)
+
+# Attach tooltips to buttons
+ToolTip(read_raw_edf_button, "Visualize raw EEG/EMG data, amplitude x minutes. Requires an EDF file with one EEG and one EMG channel.")
+ToolTip(Training_button, "Train a model using SPINDLE pre-processing. Requires a folder of EDF files and corresponding CSV annotations. The EDF and CSV filenames should match (e.g., file_1.edf & file_1.csv). You will also specify a model name.")
+ToolTip(Prediction_button, "Run predictions on EDF files using a trained model. First, select the model weights, then the folder of EDF files. Output: CSV files with epoch and sleep stage scores.")
+ToolTip(compare_button, "Compare the prediction results with the actual labels/scores. Requires a folder of prediction CSV files and corresponding CSV annotations. The filenames should match (e.g., file_1_predictions.csv & file_1.csv).")
 
 # Run the GUI loop
 root.mainloop()
