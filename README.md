@@ -71,6 +71,6 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
 
 
 # Acknowledgments - Special thanks to:
-- George Saad and the AER Lab team
+- [George Saad](https://github.com/gsaaad) and the AER Lab 
 - Original SPINDLE method developers (Miladinović et al., 2019)
 - amibeuret/spindle repository contributors
