@@ -7,15 +7,15 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
         - Remains agnostic to changes in sleep patterns across time and frequency dimensions
         - Preserves original model parameters
         - Adds convenient features for model weight management
-        - Enables automated prediction generation1
+        - Enables automated prediction generation
         - Signal Processing
         - The preprocessing pipeline incorporates sophisticated techniques:
         - Time-frequency domain operations
         - Multi-channel analysis inspired by ASR systems
-        - Advanced artifact detection and handling1
+        - Advanced artifact detection and handling
 # Installation - Environment Setup
 ### Download:
-- The latest stable python version [3.1.x]
+- The latest stable python version [3.1x+, at least 3.10]
 - Git [https://git-scm.com/downloads] - If cloning the repo, otherwise you can download the zip folder directly and extract.
 - Conda/mini conda - If usins this method.
 ## Option 1: Conda Environment
