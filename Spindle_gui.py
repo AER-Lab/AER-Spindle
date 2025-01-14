@@ -250,40 +250,70 @@ def Prediction():
 # Create the main window
 root = tk.Tk()
 root.title("AER-Lab Model Building")
-root.geometry("600x750")
+root.geometry("750x1000")
 root.configure(bg='#2E4053')
 
 # Custom Font
 custom_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
 
 # Create a header label
-header_label = tk.Label(root, text="Mouse Sleep States Analysis", font=tkfont.Font(family="Helvetica", size=18, weight="bold"),
+header_label = tk.Label(root, text="Sleep/Wake States", font=tkfont.Font(family="Helvetica", size=22, weight="bold"),
                         fg="#F7DC6F", bg='#2E4053')
 header_label.pack(pady=10)
 
 # Create buttons with custom styling -old
-button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 25, "height": 4}
+button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 22, "height": 3}
 
 
 
-# Add buttons
-read_raw_edf_button = tk.Button(root, text="Plot Raw EDF Data", command=Read_plot_EDF, **button_style)
+# Fonts for steps and instructions
+step_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
+instructions_font = tkfont.Font(family="Helvetica", size=10)
+
+# Step 1: Visualize Data
+step1_label = tk.Label(root, text="Step 1: Visualize EEG/EMG Data (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions1_label = tk.Label(root, text="Select an EDF file with 1 EEG and 1 EMG channel", 
+                                font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step1_label.pack(pady=(20, 5))
+instructions1_label.pack(pady=(5, 10))
+
+read_raw_edf_button = tk.Button(root, text="Visualize Data", command=Read_plot_EDF, **button_style)
 read_raw_edf_button.pack(pady=10)
 
-Training_button = tk.Button(root, text="Training", command=Training, **button_style)
+# Step 2: Train Model
+step2_label = tk.Label(root, text="Step 2: Train Your Model Using Spindle Parameters (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions2_label = tk.Label(root, text="Train a model on EDF files with matching CSV annotations. CSVs must have two columns: Timestamp or Epoch # and label ('W', 'NR', 'R'). "
+                                           "Select a folder containing the files and specify a name for the trained model.", 
+                                font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step2_label.pack(pady=(20, 5))
+instructions2_label.pack(pady=(5, 10))
+
+Training_button = tk.Button(root, text="Train Model", command=Training, **button_style)
 Training_button.pack(pady=10)
 
-Prediction_button = tk.Button(root, text="Prediction", command=Prediction, **button_style)
+# Step 3: Run Predictions
+step3_label = tk.Label(root, text="Step 3: Predict Using Your Trained Model or AER Model (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions3_label = tk.Label(root, text="Predict sleep/wake states using a trained model or the AER model (Spindle_MM.pth). "
+                                           "1. Select the model weights. \n 2. Choose the folder with EDF files for predictions.", 
+                                font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step3_label.pack(pady=(20, 5))
+instructions3_label.pack(pady=(5, 10))
+
+Prediction_button = tk.Button(root, text="Run Predictions", command=Prediction, **button_style)
 Prediction_button.pack(pady=10)
 
-compare_button = tk.Button(root, text="Compare Prediction to Label", command=compare_files, **button_style)
+# Step 4: Compare Predictions
+step4_label = tk.Label(root, text="Step 4: Compare Predictions to Annotations/Labels (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions4_label = tk.Label(root, text="Compare prediction output CSV files to annotations to evaluate model accuracy. "
+                                           "Select a folder with matching prediction and annotation files.", 
+                                font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step4_label.pack(pady=(20, 5))
+instructions4_label.pack(pady=(5, 10))
+
+compare_button = tk.Button(root, text="Compare Predictions", command=compare_files, **button_style)
 compare_button.pack(pady=10)
 
-# Attach tooltips to buttons
-ToolTip(read_raw_edf_button, "Visualize raw EEG/EMG data, amplitude x minutes. Requires an EDF file with one EEG and one EMG channel.")
-ToolTip(Training_button, "Train a model using SPINDLE pre-processing. Requires a folder of EDF files and corresponding CSV annotations. The EDF and CSV filenames should match (e.g., file_1.edf & file_1.csv). You will also specify a model name.")
-ToolTip(Prediction_button, "Run predictions on EDF files using a trained model. First, select the model weights, then the folder of EDF files. Output: CSV files with epoch and sleep stage scores.")
-ToolTip(compare_button, "Compare the prediction results with the actual labels/scores. Requires a folder of prediction CSV files and corresponding CSV annotations. The filenames should match (e.g., file_1_predictions.csv & file_1.csv).")
+
 
 # Run the GUI loop
 root.mainloop()
