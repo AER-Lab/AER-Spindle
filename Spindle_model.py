@@ -20,14 +20,12 @@ path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
 # Prediction Path
 folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\predictions'
 
-model_name = 'SPINDLE_model-MM_.5Hz-100Hz.pth'
-
 learning_rate = 0.00005
 epoch_num = 5
 drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
-
+model_name = 'SPINDLE_model_MM.pth'
 
 
 #1.
@@ -98,8 +96,8 @@ print("Model trained successfully", model)
 def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
 # ? Save the model weights for CNN model
-save_model_weights(model, model_name)
-print("Model weights saved successfully", model)
+# save_model_weights(model, model_name)
+# print("Model weights saved successfully", model)
 
 # 6.Load model weights
 def load_model_weights(model, filename):

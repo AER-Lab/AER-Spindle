@@ -8,7 +8,7 @@ import openpyxl
 from openpyxl.formatting.rule import FormulaRule
 
 # Setup the Excel writer
-folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\MM_.25Hz-100Hz"
+folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\MM_.50Hz-100Hz"
 excel_path = os.path.join(folder_path, "model_comparison_results.xlsx")
 prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
 output_excel_path = os.path.join(folder_path, "mismatches_summary.xlsx")
@@ -49,7 +49,7 @@ def plot_class_accuracy(class_accuracy, title):
 
 def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name):
     # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Prediction'])
+    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch #', 'Prediction'])
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
     prediction_file_name = os.path.basename(prediction_file)
     label_file_name = os.path.basename(label_file)
@@ -279,3 +279,4 @@ def loop_files_to_compare(folder_path):
             save_mismatches_to_excel(prediction_file, file_to_compare, output_excel_path)
             analyze_mismatches(prediction_file, file_to_compare, output_excel_path)
 
+compare_files()
