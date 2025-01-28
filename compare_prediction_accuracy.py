@@ -514,17 +514,43 @@ def correct_transitions(file_path):
         df.at[len(df) - 1, 'Correction'] = 'W'
         df.at[len(df) - 1, 'Notes'] += ' | Rule 9: Corrected last state to W'
 
-    # Rule 10: Check if last 3 were W, and at the signal W-R-R, turn into W
-    for i in range(2, len(df)):
+    # # ! BEFORE # Rule 10: Check if last 3 were W, and at the signal W-R-R, turn into W
+    # for i in range(2, len(df)):
+    #     if (
+    #         df.iloc[i - 2]['Prediction'] == 'W' and
+    #         df.iloc[i - 1]['Prediction'] == 'R' and
+    #         df.iloc[i]['Prediction'] == 'R'
+    #     ):
+    #         df.at[i - 1, 'Correction'] = 'W'
+    #         df.at[i, 'Correction'] = 'W'
+    #         df.at[i - 1, 'Notes'] += ' | Rule 10: Corrected, R-R changed to W-W due to W before'
+    #         df.at[i, 'Notes'] += ' | Rule 10: Corrected, R-R changed to W-W due to W before'
+    # Rule 10: Check for W-W-W-R-R and apply corrections based on subsequent states
+    for i in range(4, len(df) - 2):  # Ensure there are enough rows before and after
         if (
-            df.iloc[i - 2]['Prediction'] == 'W' and
-            df.iloc[i - 1]['Prediction'] == 'R' and
+            df.iloc[i - 4:i - 1]['Prediction'].tolist() == ['W', 'W', 'W'] and  # Check last 3 states are W
+            df.iloc[i - 1]['Prediction'] == 'R' and  # Check the signal W-R-R
             df.iloc[i]['Prediction'] == 'R'
         ):
-            df.at[i - 1, 'Correction'] = 'W'
-            df.at[i, 'Correction'] = 'W'
-            df.at[i - 1, 'Notes'] += ' | Rule 10: Corrected, R-R changed to W-W due to W before'
-            df.at[i, 'Notes'] += ' | Rule 10: Corrected, R-R changed to W-W due to W before'
+            # Count R's in the next states
+            r_after_count = df.iloc[i + 1:i + 4]['Prediction'].tolist().count('R')  # Count R's in the next 3 states
+            if r_after_count < 3:  # If fewer than 3 R's after
+                # Turn R-R into W-W
+                df.at[i - 1, 'Correction'] = 'W'
+                df.at[i, 'Correction'] = 'W'
+                df.at[i - 1, 'Notes'] += ' | Rule 10: Corrected, R-R turned to W-W due to W before and <3 R after'
+                df.at[i, 'Notes'] += ' | Rule 10: Corrected, R-R turned to W-W due to W before and <3 R after'
+            elif r_after_count >= 3:  # If 3 or more R's after
+                # Turn W-W-W before the signal into NR
+                df.at[i - 4, 'Correction'] = 'NR'
+                df.at[i - 3, 'Correction'] = 'NR'
+                df.at[i - 2, 'Correction'] = 'NR'
+                df.at[i - 4, 'Notes'] += ' | Rule 10: Corrected, W-W-W turned to NR due to 3+ R after'
+                df.at[i - 3, 'Notes'] += ' | Rule 10: Corrected, W-W-W turned to NR due to 3+ R after'
+                df.at[i - 2, 'Notes'] += ' | Rule 10: Corrected, W-W-W turned to NR due to 3+ R after'
+
+ 
+    
     # Rule 11: If W > 4 and W-R signal and multiple R > 3 and W > 3 after, turn R to W
     for i in range(1, len(df) - 4):
         if (
@@ -576,7 +602,7 @@ def correct_transitions(file_path):
     return w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details
 # Example usage
 # compare_files()
-file_path = r'C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\Model_Comparison\Validate_State_Transitions\post-1100_predictions_W-R_Transitions.xlsx'
+file_path = r'C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\Model_Comparison\Validate_State_Transitions\post-1100_predictions_W-R_Transitions_2.xlsx'
 w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details = correct_transitions(file_path)
 print(f"Number of W-R transitions: {w_r_transitions}")
 print(f"Number of R epochs after W-R transitions: {r_epochs_after_w_r}")
