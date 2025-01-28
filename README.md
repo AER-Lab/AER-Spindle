@@ -35,7 +35,7 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
 1. ###  Clone repository
 ```
 - git clone https://github.com/AER-Lab/AER-Spindle.git
-- cd SPINDLE_Sleep_Prediction
+- cd AER-Spindle
 ```
 
 # Install dependencies
