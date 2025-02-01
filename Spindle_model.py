@@ -96,8 +96,8 @@ print("Model trained successfully", model)
 def save_model_weights(model, filename):
     torch.save(model.state_dict(), filename)
 # ? Save the model weights for CNN model
-# save_model_weights(model, model_name)
-# print("Model weights saved successfully", model)
+save_model_weights(model, model_name)
+print("Model weights saved successfully", model)
 
 # 6.Load model weights
 def load_model_weights(model, filename):

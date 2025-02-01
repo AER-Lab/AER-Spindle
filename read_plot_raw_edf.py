@@ -11,6 +11,12 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         'hours': 1 / 3600
     }.get(time_unit, 1)  # Default to seconds if an invalid unit is passed
 
+    # Read meta data - channel names
+    metaData = highlevel.read_edf_header(edf_file)
+    print("Meta Data:", metaData)
+    channels = metaData['SignalHeaders']
+    channels = [channel['label'] for channel in channels]
+
     try:
         # Read EDF file
         signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
@@ -39,7 +45,7 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
 
     # Plot each channel pair over the time axis
     for i in range(0, df.shape[1], 2):
-        print("Plotting Pair: ", i, "Channel 1: ", i, "Channel 2: ", i + 1)
+        print("Plotting Pair: ", i, f"Channel {channels[0]}: ", i, f"Channel {channels[1]}: ", i + 1)
 
         channel1 = df.iloc[:, i]
         channel2 = df.iloc[:, i + 1]
@@ -49,15 +55,15 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         
         # Plot Channel 1
         plt.subplot(2, 1, 1)
-        plt.plot(time_axis, channel1)
-        plt.title(f"Channel {i}")
+        plt.plot(time_axis, channel1, linewidth=0.3)
+        plt.title(f"EEG - (Ch. {channels[0]})")
         plt.xlabel(f'Time ({time_unit})')
         plt.ylabel("Amplitude")
 
         # Plot Channel 2
         plt.subplot(2, 1, 2)
-        plt.plot(time_axis, channel2)
-        plt.title(f"Channel {i+1}")
+        plt.plot(time_axis, channel2, linewidth=0.1)  # Thinner line for Channel 2
+        plt.title(f"EMG - (Ch. {channels[1]})")
         plt.xlabel(f'Time ({time_unit})')
         plt.ylabel("Amplitude")
 

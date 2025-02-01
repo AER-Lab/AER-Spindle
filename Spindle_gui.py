@@ -76,7 +76,6 @@ def Read_plot_EDF():
     if edf_file:
         # Check if the selected file ends with '.edf'
         if edf_file.lower().endswith(".edf"):
-            messagebox.showinfo("EDF File", f"Plotting Raw Data: {edf_file}")
             # Call your function with the selected EDF file
             read_plot_raw_edf(edf_file)
         else:
@@ -89,13 +88,18 @@ def Training():
     folder_path = filedialog.askdirectory(title="Select Folder for Training")
     
     if folder_path:
-        # Step 2: Prompt user to rename the model (or use a default name)
-        model_name = simpledialog.askstring("Model Name", "Enter model name (default: SPINDLE_model-test.pth):", initialvalue="SPINDLE_model-test.pth")
-        
+        # Step 2: Prompt user for model name and destination folder
+        model_name = simpledialog.askstring("Model Name", "Enter model name (default: SPINDLE_model-test):", initialvalue="SPINDLE_model-test")
         if model_name is None:
-            model_name = 'SPINDLE_model-test.pth'  # If user cancels, use default
+            model_name = 'SPINDLE_model-test'  # If user cancels, use default
+            
+        destination_folder = filedialog.askdirectory(title="Select Destination Folder for Model")
+        if not destination_folder:
+            messagebox.showwarning("No Folder Selected", "Please select a destination folder to save the model.")
+            return
+        
+        model_name = os.path.join(destination_folder, model_name + ".pth")
 
-        messagebox.showinfo("Training", f"Processing & Training the model using files from: {folder_path} with model name: {model_name}")
 
         # Step 3: Load data and labels
         data, all_labels = load_data_and_labels(folder_path, SPINDLE_PREPROCESSING_PARAMS)
@@ -161,7 +165,6 @@ def Prediction():
         messagebox.showwarning("No Folder Selected", "Please select a folder for prediction files.")
         return
 
-    messagebox.showinfo("Prediction", "Running Predictions...")
 
     # Step 3: Load model weights
     def load_model_weights(model, filename):
@@ -250,19 +253,19 @@ def Prediction():
 # Create the main window
 root = tk.Tk()
 root.title("AER-Lab Model Building")
-root.geometry("750x1000")
+root.geometry("750x900")
 root.configure(bg='#2E4053')
 
 # Custom Font
 custom_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
 
 # Create a header label
-header_label = tk.Label(root, text="Sleep/Wake States", font=tkfont.Font(family="Helvetica", size=22, weight="bold"),
+header_label = tk.Label(root, text="Sleep/Wake States Annotations", font=tkfont.Font(family="Helvetica", size=22, weight="bold"),
                         fg="#F7DC6F", bg='#2E4053')
 header_label.pack(pady=10)
 
 # Create buttons with custom styling -old
-button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 22, "height": 3}
+button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 17, "height": 1}
 
 
 
@@ -282,8 +285,8 @@ read_raw_edf_button.pack(pady=10)
 
 # Step 2: Train Model
 step2_label = tk.Label(root, text="Step 2: Train Your Model Using Spindle Parameters (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions2_label = tk.Label(root, text="Train a model on EDF files with matching CSV annotations. CSVs must have two columns: Timestamp or Epoch # and label ('W', 'NR', 'R'). "
-                                           "Select a folder containing the files and specify a name for the trained model.", 
+instructions2_label = tk.Label(root, text="Train a model on EDF files with matching CSV annotations. \n EDF & CSV files should have corresponding names [file_1.edf, file_1.csv]. \n CSVs must have two columns: Timestamp or Epoch # in the first column and labels [(W, NR, R) OR (2, 3, 1)] in the second column."
+                                           "\n Select a folder containing the edf/csv files and specify a name & the destination folder for the trained model weight file.", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step2_label.pack(pady=(20, 5))
 instructions2_label.pack(pady=(5, 10))
@@ -291,10 +294,12 @@ instructions2_label.pack(pady=(5, 10))
 Training_button = tk.Button(root, text="Train Model", command=Training, **button_style)
 Training_button.pack(pady=10)
 
+current_directory = os.getcwd()
+
 # Step 3: Run Predictions
-step3_label = tk.Label(root, text="Step 3: Predict Using Your Trained Model or AER Model (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions3_label = tk.Label(root, text="Predict sleep/wake states using a trained model or the AER model (Spindle_MM.pth). "
-                                           "1. Select the model weights. \n 2. Choose the folder with EDF files for predictions.", 
+step3_label = tk.Label(root, text="Step 3: Predict Using Your Trained Model or the AER Model (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions3_label = tk.Label(root, text=f"Predict sleep/wake states using your trained model or the AER model (Spindle_MM.pth - Located at {current_directory}). \n "
+                                           "1. Select the model weights file. \n 2. Choose the folder with EDF files for predictions.", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step3_label.pack(pady=(20, 5))
 instructions3_label.pack(pady=(5, 10))

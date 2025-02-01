@@ -602,12 +602,12 @@ def correct_transitions(file_path):
     return w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details
 # Example usage
 # compare_files()
-file_path = r'C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\Model_Comparison\Validate_State_Transitions\post-1100_predictions_W-R_Transitions_2.xlsx'
-w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details = correct_transitions(file_path)
-print(f"Number of W-R transitions: {w_r_transitions}")
-print(f"Number of R epochs after W-R transitions: {r_epochs_after_w_r}")
-print(f"Number of W epochs before W-R transitions: {w_epochs_before_w_r}")
+# file_path = r'C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\Model_Comparison\Validate_State_Transitions\post-1100_predictions_W-R_Transitions_2.xlsx'
+# w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details = correct_transitions(file_path)
+# print(f"Number of W-R transitions: {w_r_transitions}")
+# print(f"Number of R epochs after W-R transitions: {r_epochs_after_w_r}")
+# print(f"Number of W epochs before W-R transitions: {w_epochs_before_w_r}")
 
-# Print detailed information for each transition
-for detail in transition_details:
-    print(f"Transition Index: {detail['Transition Index']}, W Epochs Before: {detail['W Epochs Before']}, R Epochs After: {detail['R Epochs After']}")
+# # Print detailed information for each transition
+# for detail in transition_details:
+#     print(f"Transition Index: {detail['Transition Index']}, W Epochs Before: {detail['W Epochs Before']}, R Epochs After: {detail['R Epochs After']}")
