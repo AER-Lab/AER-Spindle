@@ -1,201 +1,157 @@
 import pandas as pd
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Border, Side
+import os
+
+def correct_states(df):
+    # Run the correction process three times to ensure propagation of changes
+    for _ in range(3):
+        i = 0
+        while i < len(df):
+            #print(f"Checking i={i}, State={df.loc[i, 'State']}")
+
+            # Correct short sequences of 'R' (1-3 episodes) flanked by 'W'
+            if df.loc[i, 'State'] == 'R' and df.loc[i - 1, 'State'] == 'W':
+                rem_count = 1
+                j = i
+                while j + 1 < len(df) and df.loc[j + 1, 'State'] == 'R' and rem_count < 4:
+                    j += 1
+                    rem_count += 1
+
+                if j + 1 < len(df) and df.loc[j + 1, 'State'] == 'W':
+                    df.loc[i:j+1, 'State'] = 'W'
+                    i += 1  # Move to the next index
+                    #print(f"Corrected W to R at positions {i} to {end_w}")
 
 
+            # Check for long NR (>5) -> short W (<5) -> long R (>5) transition -- changing W to NR
+            if i < len(df) - 1 and df.loc[i, 'State'] == 'W' and df.loc[i + 1, 'State'] == 'R':
+                # Identify if W preceding 'R' is shorter than 5
+                start_w = i
+                end_w = i
+                while start_w > 0 and df.loc[start_w - 1, 'State'] == 'W':
+                    start_w -= 1
+                w_length = end_w - start_w + 1
+                if w_length < 5:
+                    # Identify if NR preceding W is longer than 5
+                    end_nr = start_w - 1
+                    start_nr = start_w - 1
+                    nr_length = 0  # Initialize NR length
+                    while start_nr > 0 and df.loc[start_nr - 1, 'State'] == 'NR':
+                        nr_length += 1
+                        start_nr -= 1
+                        if nr_length > 5:
+                            break  # Stop counting as NR length exceeds 5
+                    nr_length += 1  # Include the initial NR at start_w - 1
 
-def correct_transitions(file_path):
-    """
-    Correct transitions in the W-R Transitions sheet and highlight corrections in orange, 
-    and transitions in yellow.
-    """
-    # Read the Excel file
-    df = pd.read_excel(file_path, sheet_name="W-R Transitions")
+                    # Identify if R following W is longer than 5
+                    start_r = end_w + 1
+                    end_r = end_w + 1
+                    r_length = 0  # Initialize R length
+                    while end_r < len(df) - 1 and df.loc[end_r + 1, 'State'] == 'R':
+                        r_length += 1
+                        end_r += 1
+                        if r_length > 5:
+                            break  # Stop counting as R length exceeds 5
+                    r_length += 1  # Include the initial R at end_w + 1
 
-    # Initialize counters and details list
-    w_r_transitions = 0
-    r_epochs_after_w_r = 0
-    w_epochs_before_w_r = 0
-    transition_details = []
+                    # If both NR and R are long enough, correct W to NR
+                    if nr_length > 5 and r_length > 5:
+                        df.loc[start_w:end_w, 'State'] = 'NR'
+                        i += 1  # Move index to the next epoch
 
-    # Add correction and notes columns if not present
-    if 'Correction' not in df.columns:
-        df['Correction'] = df['Prediction']
-    if 'Notes' not in df.columns:
-        df['Notes'] = ''
-    else:
-        df['Notes'] = df['Notes'].fillna('')
+                    # If NR is long enough, but R is short, correct R to W
+                    if nr_length > 5 and r_length < 5:
+                        df.loc[start_r:end_r, 'State'] = 'W'
+                        i += 1
 
-    # Apply rules for W-R transitions and corrections
-    for i in range(1, len(df) - 1):
-        if df.iloc[i - 1]['Prediction'] == 'W' and df.iloc[i]['Prediction'] == 'R':
-            w_r_transitions += 1
+            #Correct additional errors:
 
-            # Count R epochs after W-R transition
-            r_count = 0
-            for j in range(i, len(df)):
-                if df.iloc[j]['Prediction'] == 'R':
-                    r_epochs_after_w_r += 1
-                    r_count += 1
-                else:
-                    break
+            # Correct single 'NR' preceded by 'R' and followed by 'W' (R-NR-W = R-W-W)
+            if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'NR' and df.loc[i - 1, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'W':
+                df.loc[i, 'State'] = 'W'
+                i += 1
 
-            # Count W epochs before W-R transition
-            w_count = 0
-            for k in range(i - 1, -1, -1):
-                if df.iloc[k]['Prediction'] == 'W':
-                    w_epochs_before_w_r += 1
-                    w_count += 1
-                else:
-                    break
+            # Correct single 'NR' surrounded by 'W' (W-NR-W = W-W-W)
+            if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'NR' and df.loc[i - 1, 'State'] == 'W' and df.loc[i + 1, 'State'] == 'W':
+                df.loc[i, 'State'] = 'W'
+                i += 1
 
-            # Store the details of the transition
-            transition_details.append({
-                'Transition Index': i,
-                'W Epochs Before': w_count,
-                'R Epochs After': r_count
-            })
+            # Correct single 'NR' surrounded by at least two 'R' on both sides (R-R-NR-R-R = R-R-R-R-R)
+            if i > 1 and i < len(df) - 2 and df.loc[i, 'State'] == 'NR':
+                # Check if the two states before and after the 'NR' are 'R'
+                if all(df.loc[i - j, 'State'] == 'R' for j in range(1, 3)) and all(df.loc[i + k, 'State'] == 'R' for k in range(1, 3)):
+                    df.loc[i, 'State'] = 'R'
+                    i += 1
 
-            # Add notes and corrections
-            if pd.isna(df.at[i, 'Notes']):
-                df.at[i, 'Notes'] = ''
-            df.at[i, 'Notes'] += f'W-R transition at index {i}, W before: {w_count}, R after: {r_count}'
+            # Correct single 'W' surrounded by at least three 'R' on both sides (R-R-R-W-R-R-R = R-R-R-R-R-R-R)
+            if i > 2 and i < len(df) - 3 and df.loc[i, 'State'] == 'W':
+                # Check if there are at least three 'R' before and after the 'W'
+                if all(df.loc[i - j, 'State'] == 'R' for j in range(1, 4)) and all(df.loc[i + k, 'State'] == 'R' for k in range(1, 4)):
+                    df.loc[i, 'State'] = 'R'
+                    i += 1
 
-            # Rule 1: Correct R to W if W > 4 before and either W/NR follows R
-            if w_count > 4 and (df.iloc[i + 1]['Prediction'] in ['W', 'NR'] or df.iloc[i + 2]['Prediction'] in ['W', 'NR']):
-                df.at[i, 'Correction'] = 'W'
-                df.at[i, 'Notes'] += ' | Rule 1: Corrected, R changed to W due to >4 W before and W/NR after'
+            # Correct single 'R' preceded by 'W' and followed by 'NR' (W-R-NR = W-W-NR)
+            if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'R' and df.loc[i - 1, 'State'] == 'W' and df.loc[i + 1, 'State'] == 'NR':
+                df.loc[i, 'State'] = 'W'
+                i += 1
 
-            # Rule 2: Handle W (1-4) before R with long NR preceding W
-            if (
-                1 <= w_count <= 4 and
-                df.iloc[max(0, k - 5):k]['Prediction'].tolist().count('NR') > 5 and
-                r_count > 5
-            ):
-                df.loc[max(0, k - w_count):k, 'Correction'] = 'NR'
-                df.at[i, 'Notes'] += ' | Rule 2: Corrected, W changed to NR due to long NR before W and >5 R after'
+            # Correct double 'R' preceded by 'W' and followed by 'NR' (W-R-R-NR = W-W-W-NR)
+            if i > 1 and i < len(df) - 2 and df.loc[i, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'R' and df.loc[i - 1, 'State'] == 'W' and df.loc[i + 2, 'State'] == 'NR':
+                df.loc[i, 'State'] = 'W'
+                df.loc[i + 1, 'State'] = 'W'
+                i += 1
 
-    # Rule 3: Single R correction (NR >3 before, W after R)
-    for i in range(1, len(df) - 4):
-        if (
-            df.iloc[i - 3:i]['Prediction'].tolist().count('NR') >= 3 and
-            df.iloc[i]['Prediction'] == 'R' and
-            df.iloc[i + 1:i + 5]['Prediction'].tolist().count('W') >= 3
-        ):
-            df.at[i, 'Correction'] = 'W'
-            df.at[i, 'Notes'] += ' | Rule 3: Corrected, Single R changed to W due to NR >3 before and W >3 after'
+            # Correct single 'R' preceded by 'NR' and followed by 'W' (NR-R-W = NR-W-W)
+            if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'R' and df.loc[i - 1, 'State'] == 'NR' and df.loc[i + 1, 'State'] == 'W':
+                df.loc[i, 'State'] = 'W'
+                i += 1
 
-    # Rule 4: Single R correction with following R in 4 epochs
-    for i in range(1, len(df) - 4):
-        if (
-            df.iloc[i - 3:i]['Prediction'].tolist().count('NR') >= 3 and
-            df.iloc[i]['Prediction'] == 'R' and
-            df.iloc[i + 1:i + 5]['Prediction'].tolist().count('R') > 2
-        ):
-            df.loc[i + 1:i + 5, 'Correction'] = 'R'
-            df.loc[i + 1:i + 5, 'Notes'] += ' | Rule 4: Corrected, Following W changed to R due to >2 R after'
+            # Correct single 'R' surrounded by 'NR' (NR-R-NR = NR-NR-NR)
+            if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'R' and df.loc[i - 1, 'State'] == 'NR' and df.loc[i + 1, 'State'] == 'NR':
+                df.loc[i, 'State'] = 'NR'
+                i += 1
 
-    # Rule 5: NR-R(single)-NR transition
-    for i in range(1, len(df) - 1):
-        if (
-            df.iloc[i - 1]['Prediction'] == 'NR' and
-            df.iloc[i]['Prediction'] == 'R' and
-            df.iloc[i + 1]['Prediction'] == 'NR'
-        ):
-            df.at[i, 'Correction'] = 'NR'
-            df.at[i, 'Notes'] += ' | Rule 5: Corrected, Single R changed to NR'
+            # Correct double 'R' surrounded by 'NR' (NR-R-R-NR = NR-NR-NR-NR)
+            if i > 0 and i < len(df) - 2 and df.loc[i, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'R' and df.loc[i - 1, 'State'] == 'NR' and df.loc[i + 2, 'State'] == 'NR':
+                df.loc[i, 'State'] = 'NR'
+                df.loc[i + 1, 'State'] = 'NR'
+                i += 1
 
-    # Rule 6: Single NR correction (W-NR(single)-W)
-    for i in range(1, len(df) - 1):
-        if (
-            df.iloc[i - 1]['Prediction'] == 'W' and
-            df.iloc[i]['Prediction'] == 'NR' and
-            df.iloc[i + 1]['Prediction'] == 'W'
-        ):
-            df.at[i, 'Correction'] = 'W'
-            df.at[i, 'Notes'] += ' | Rule 6: Corrected, Single NR changed to W due to W before and after'
+            # Correct 3-4 episodes of 'R' surrounded by at least 4 'NR' on both sides
+            if i > 3 and i < len(df) - 4:
+                if df.loc[i, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'NR':
+                    # Check for at least 4 'NR' after
+                    if all(df.loc[i + h, 'State'] == 'NR' for h in range(1, 5)):
+                        start_r2 = i
+                        end_r2 = i
+                        # Expand to find the full length of the 'R' sequence, up to 4 'R's
+                        while start_r < 0 and df.loc[start_r2 - 1, 'State'] == 'R' and (end_r2 - start_r2 + 1) < 4:
+                            end_r2 -= 1
 
-    # Rule 7: Long R (>4) - NR(single) - W (>3)
-    for i in range(6, len(df) - 4):
-        if (
-            df.iloc[i - 4:i]['Prediction'].tolist().count('R') > 4 and
-            df.iloc[i]['Prediction'] == 'NR' and
-            df.iloc[i + 1:i + 4]['Prediction'].tolist().count('W') > 3
-        ):
-            df.at[i, 'Correction'] = 'W'
-            df.at[i, 'Notes'] += ' | Rule 7: Corrected, NR changed to W due to >4 R before and >3 W after'
+                        r_length2 = end_r2 - start_r2 + 1
+                        # Check if the sequence is prceeded by at least 4 'NR'
+                        if all(df.loc[start_r2 - 1 - k, 'State'] == 'NR' for k in range(1, 5)):
+                            # Correct the 'R' sequence to 'NR'
+                            df.loc[start_r2:end_r2, 'State'] = 'NR'
+                            i += 1
 
-    # Rule 8: Long R (>6) to NR (>6)
-    for i in range(12, len(df)):
-        if (
-            df.iloc[i - 6:i]['Prediction'].tolist().count('R') > 6 and
-            df.iloc[i:i + 6]['Prediction'].tolist().count('NR') > 6
-        ):
-            df.loc[i - 2:i, 'Correction'] = 'W'
-            df.loc[i - 2:i, 'Notes'] += ' | Rule 8: Corrected, Artificial W inserted for long R to NR'
+            i += 1
 
-    # Rule 9: Correct last state in the document
-    if df.iloc[-1]['Prediction'] in ['R', 'NR']:
-        df.at[len(df) - 1, 'Correction'] = 'W'
-        df.at[len(df) - 1, 'Notes'] += ' | Rule 9: Corrected last state to W'
+    return df
 
-    # Rule 10: Check if last 3 were W, and at the signal W-R-R, turn into W
-    for i in range(2, len(df)):
-        if (
-            df.iloc[i - 2]['Prediction'] == 'W' and
-            df.iloc[i - 1]['Prediction'] == 'R' and
-            df.iloc[i]['Prediction'] == 'R'
-        ):
-            df.at[i - 1, 'Correction'] = 'W'
-            df.at[i, 'Correction'] = 'W'
-            df.at[i - 1, 'Notes'] += ' | Rule 10: Corrected, R-R changed to W-W due to W before'
-            df.at[i, 'Notes'] += ' | Rule 10: Corrected, R-R changed to W-W due to W before'
-    # Rule 11: If W > 4 and W-R signal and multiple R > 3 and W > 3 after, turn R to W
-    for i in range(1, len(df) - 4):
-        if (
-            df.iloc[i - 4:i]['Prediction'].tolist().count('W') > 4 and
-            df.iloc[i]['Prediction'] == 'R' and
-            df.iloc[i + 1:i + 4]['Prediction'].tolist().count('R') > 3 and
-            df.iloc[i + 1:i + 4]['Prediction'].tolist().count('W') > 3
-        ):
-            df.at[i, 'Correction'] = 'W'
-            df.at[i, 'Notes'] += ' | Rule 11: Corrected, R changed to W due to >4 W before, >3 R and >3 W after'
-    # Save corrections directly to the W-R Transitions sheet
-    with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
-        df.to_excel(writer, index=False, sheet_name='W-R Transitions')
 
-    # Apply formatting
-    wb = load_workbook(file_path)
-    ws = wb['W-R Transitions']
-    yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-    orange_fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
-    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'),
-                         top=Side(style='thin'), bottom=Side(style='thin'))
+def process_files(input_dir, output_dir):
+    os.makedirs(output_dir, exist_ok=True)
+    for file in os.listdir(input_dir):
+        if file.endswith('.csv'):
+            df = pd.read_csv(os.path.join(input_dir, file), header=None)
+            df.columns = ['Time', 'State']
+            df_corrected = correct_states(df)
+            df_corrected.to_csv(os.path.join(output_dir, file.replace('.csv', '-correct.csv')), index=False)
+            print(f"Processed: {file}")
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=6):
-        transition_value = row[3].value  # Assuming 'Transition Highlight' is the 4th column
-        notes_value = row[5].value  # Assuming 'Notes' is the 6th column
-        if notes_value and 'Corrected' in notes_value:  # Highlight corrections in orange
-            for cell in row:
-                cell.fill = orange_fill
-        elif transition_value == 'Yes':  # Highlight W-R transitions in yellow
-            for cell in row:
-                cell.fill = yellow_fill
-        for cell in row:  # Apply thin borders to all rows
-            cell.border = thin_border
-    
-    
+# Define paths
+input_dir = '/content/testing'
+output_dir = '/content/testing-output2' # The folder will be automatically created if doesn't exists
 
-    wb.save(file_path)
-
-    return w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details
-# Example usage
-file_path = r'C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\Model_Comparison\Validate_State_Transitions\pre-1341_predictions_W-R_Transitions.xlsx'
-w_r_transitions, r_epochs_after_w_r, w_epochs_before_w_r, transition_details = correct_transitions(file_path)
-print(f"Number of W-R transitions: {w_r_transitions}")
-print(f"Number of R epochs after W-R transitions: {r_epochs_after_w_r}")
-print(f"Number of W epochs before W-R transitions: {w_epochs_before_w_r}")
-
-# Print detailed information for each transition
-for detail in transition_details:
-    print(f"Transition Index: {detail['Transition Index']}, W Epochs Before: {detail['W Epochs Before']}, R Epochs After: {detail['R Epochs After']}")
+# Process all CSV files in the directory
+process_files(input_dir, output_dir)

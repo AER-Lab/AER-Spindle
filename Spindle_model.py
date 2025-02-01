@@ -16,15 +16,16 @@ import time
 
 
 # Training Path
-path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
+path_for_training = r'path/to/folder/for/training'
 # Prediction Path
-folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\predictions'
+folder_file_prediction = r'path/to/folder/for/prediction'
 
 learning_rate = 0.00005
 epoch_num = 5
 drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
+# Model name SPINDLE_model_MM.pth AER-Model by Default
 model_name = 'SPINDLE_model_MM.pth'
 
 
@@ -65,6 +66,8 @@ target_tensor_shape = target_tensor.shape
 # Create DataLoader -DATA
 dataset = TensorDataset(data, all_labels)
 train_loader = DataLoader(dataset, batch_size=batch_size_num, shuffle=True)
+
+
 # 3. model should use data_shape as input_dim
 model = SpindleGraph(input_dim=data_shape, nb_class=num_classes, dropout_rate=drop_out_rate)
 criterion = nn.CrossEntropyLoss()
@@ -126,8 +129,8 @@ for file_base in array_files:
     predictions = predict_sleep_stages(data, model)
 
     # Save the predictions to a CSV file with timestamps
-    timestamps = [i * SPINDLE_PREPROCESSING_PARAMS['time_interval'] for i in range(len(predictions))]
-    df = pd.DataFrame({'Timestamp': timestamps, 'Prediction': predictions})
+    epochs = [i * SPINDLE_PREPROCESSING_PARAMS['time_interval'] for i in range(len(predictions))]
+    df = pd.DataFrame({'Epochs': epochs, 'Prediction': predictions})
     prediction_csv_path = os.path.join(folder_file_prediction, f"{file_base}_predictions.csv")
     df.to_csv(prediction_csv_path, index=False, header=False)
     print(f"Predictions saved to {prediction_csv_path}")

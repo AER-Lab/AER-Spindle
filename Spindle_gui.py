@@ -237,7 +237,9 @@ def Prediction():
         predictions = predict_sleep_stages(data, model)
 
         # Step 8: Save predictions to a CSV file
-        df = pd.DataFrame(predictions, columns=['Prediction'])
+        epochs = [i * SPINDLE_PREPROCESSING_PARAMS['time_interval'] for i in range(len(predictions))]
+
+        df = pd.DataFrame({'Epochs': epochs, 'Prediction': predictions})
         prediction_csv_path = os.path.join(folder_file_prediction, f"{file_base}_predictions.csv")
         df.to_csv(prediction_csv_path, index=False, header=False)
         print(f"Predictions saved to {prediction_csv_path}")
