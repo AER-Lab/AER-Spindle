@@ -10,11 +10,6 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side
 from openpyxl.utils.dataframe import dataframe_to_rows
 
-# Setup the Excel writer
-folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\Model_Comparison\Validate_State_Transitions"
-excel_path = os.path.join(folder_path, "model_comparison_results.xlsx")
-prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
-output_excel_path = os.path.join(folder_path, "mismatches_summary.xlsx")
 
 
 
@@ -52,101 +47,9 @@ def plot_class_accuracy(class_accuracy, title):
 
 
 
-def check_w_r_transitions(prediction_file, label_file):
-    """
-    Check for W-R transitions in the prediction file, compare with the true state in the label file,
-    and export surrounding data to an Excel file with highlighting.
-
-    Args:
-        prediction_file (str): Path to the prediction CSV file.
-        label_file (str): Path to the label CSV file.
-
-    Returns:
-        str: A message indicating the presence of W-R transitions and the specific rows/epochs where they occur.
-    """
-    # Load the predictions and labels from the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch #', 'Prediction'])
-    labels = pd.read_csv(label_file, header=None, names=['Epoch #', 'Label'])
-
-    # Ensure both files have matching rows
-    if len(predictions) != len(labels):
-        return "Mismatch in the number of rows between predictions and labels."
-
-    # Concatenate predictions and labels along the columns
-    merged = pd.concat([predictions, labels['Label']], axis=1)
-    # merged = pd.merge(predictions, labels, on='Epoch #', how='inner')
-
-    w_r_transitions = []  # To store the indices of W-R transitions
-
-    # Identify W-R transitions
-    for i in range(1, len(merged)):
-        current = merged['Prediction'][i]
-        previous = merged['Prediction'][i - 1]
-
-        if previous == 'W' and current == 'R':  # Detect W-R transitions
-            w_r_transitions.append(i)  # Store the index of the transition
-
-    if not w_r_transitions:
-        return "No W-R transitions found in the prediction file."
-
-    # Collect surrounding data for each transition
-    surrounding_data = []
-    for idx in w_r_transitions:
-        start = max(0, idx - 4)  # Ensure we don't go below 0
-        end = min(len(merged), idx + 5)  # Ensure we don't go past the last row
-        transition_data = merged.iloc[start:end].copy()
-        transition_data['Transition Highlight'] = ['Yes' if i == idx else '' for i in range(start, end)]
-        surrounding_data.append(transition_data)
-
-    # Combine all surrounding data into one DataFrame
-    all_data = pd.concat(surrounding_data, ignore_index=True)
-
-    # Create an Excel file dynamically named after the prediction file
-    output_file = prediction_file.replace('.csv', '_W-R_Transitions.xlsx')
-
-    # Initialize a new workbook
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "W-R Transitions"
-
-    # Add the data to the worksheet
-    for row in dataframe_to_rows(all_data, index=False, header=True):
-        ws.append(row)
-
-    # Apply formatting (highlight transitions with a color and add borders)
-    highlight_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'),
-                          top=Side(style='thin'), bottom=Side(style='thin'))
-
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=len(all_data.columns)):
-        if row[-1].value == 'Yes':  # Highlight rows where 'Transition Highlight' is 'Yes'
-            for cell in row:
-                cell.fill = highlight_fill
-        for cell in row:
-            cell.border = thin_border
-
-    # Save the workbook
-    wb.save(output_file)
-
-    # Generate the output message
-    message = f"Found {len(w_r_transitions)} W-R transitions:\n"
-    message += ", ".join(f"Epoch {merged['Epoch #'][row]}" for row in w_r_transitions)
-    message += f"\nData exported to {output_file} with highlighted transitions and true states included."
-
-    return message
-
-
 
 
 def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name):
-
-    # First check if there are W-R or R-W transitions in the predictin file
-    
-    output_excel = "w_r_transitions.xlsx"
-    result_message = check_w_r_transitions(prediction_file, label_file)
-    print(result_message)
-
-
     # Load the CSV files
     predictions = pd.read_csv(prediction_file, header=None, names=['Epoch #', 'Prediction'])
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
@@ -166,17 +69,28 @@ def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_na
     # Calculate class-specific accuracy
     class_accuracy = combined.groupby('Label')['Correct'].mean() * 100  
 
-    misclassification_matrix = pd.crosstab(combined['Label'], combined['Prediction'], normalize='index') * 100
+    # Create both percentage and frequency matrices
+    misclassification_matrix_pct = pd.crosstab(combined['Label'], combined['Prediction'], normalize='index') * 100
+    misclassification_matrix_freq = pd.crosstab(combined['Label'], combined['Prediction'])
 
-    # Extract values for NR, R, and W
-    nr_value = misclassification_matrix.at['NR', 'NR'] if 'NR' in misclassification_matrix.index and 'NR' in misclassification_matrix.columns else 0
-    r_value = misclassification_matrix.at['R', 'R'] if 'R' in misclassification_matrix.index and 'R' in misclassification_matrix.columns else 0
-    w_value = misclassification_matrix.at['W', 'W'] if 'W' in misclassification_matrix.index and 'W' in misclassification_matrix.columns else 0
+    # Extract values for NR, R, and W from percentage matrix
+    nr_value = misclassification_matrix_pct.at['NR', 'NR'] if 'NR' in misclassification_matrix_pct.index and 'NR' in misclassification_matrix_pct.columns else 0
+    r_value = misclassification_matrix_pct.at['R', 'R'] if 'R' in misclassification_matrix_pct.index and 'R' in misclassification_matrix_pct.columns else 0
+    w_value = misclassification_matrix_pct.at['W', 'W'] if 'W' in misclassification_matrix_pct.index and 'W' in misclassification_matrix_pct.columns else 0
 
-    return overall_accuracy, class_accuracy, misclassification_matrix, nr_value, r_value, w_value
+    return overall_accuracy, class_accuracy, misclassification_matrix_pct, misclassification_matrix_freq, nr_value, r_value, w_value
+
+def define_folder_path(folder_path):
+    folder_path = folder_path
+    excel_path = os.path.join(folder_path, "model_comparison_results.xlsx")
+    prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
+    output_excel_path = os.path.join(folder_path, "mismatches_summary.xlsx")
+    return folder_path, excel_path, prediction_files, output_excel_path
 
 
-def compare_files():
+def compare_files(folder_path):
+    folder_path, excel_path, prediction_files, output_excel_path = define_folder_path(folder_path)
+
     with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
         average_across_files = []
         combined_confusion_matrix = None
@@ -185,7 +99,7 @@ def compare_files():
             label_file = os.path.join(folder_path, base_name + '.csv')
             if os.path.exists(label_file):
                 sheet_name = base_name  # Sheet name based on file base name
-                overall_accuracy, class_accuracy, misclassification_matrix, nr_value, r_value, w_value = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
+                overall_accuracy, class_accuracy, misclassification_matrix,misclassification_matrix_freq, nr_value, r_value, w_value = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
                 # Compute the confusion matrix for the current file
                 # Accumulate the confusion matrices
 
@@ -197,7 +111,8 @@ def compare_files():
                     combined_confusion_matrix += misclassification_matrix
 
                 plot_confusion_matrix(misclassification_matrix, f"Confusion Matrix for {sheet_name}")
-                # plot_class_accuracy(class_accuracy, f"Class Accuracy for {sheet_name}")
+                plot_confusion_matrix(misclassification_matrix_freq, f"Confusion Matrix for {sheet_name} (Frequency)")
+                plot_class_accuracy(class_accuracy, f"Class Accuracy for {sheet_name}")
 
                 average_across_files.append(overall_accuracy)
                 print("Overall Accuracy: {:.2f}%".format(overall_accuracy))
@@ -233,7 +148,7 @@ def compare_files():
             plt.ylabel("Accuracy (%)")
             plt.ylim(0, 100)
             plt.show()
-    loop_files_to_compare(folder_path)
+    loop_files_to_compare(folder_path, output_excel_path)
 
 
 
@@ -366,7 +281,7 @@ def analyze_mismatches(prediction_file, label_file, output_file):
 
 
 
-def loop_files_to_compare(folder_path):
+def loop_files_to_compare(folder_path, output_excel_path):
     # first check for .csv and _predictions.csv files
     csv_files = glob.glob(os.path.join(folder_path, '*.csv'))
     prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
@@ -379,5 +294,3 @@ def loop_files_to_compare(folder_path):
 
 
 
-# Example usage
-# compare_files()
