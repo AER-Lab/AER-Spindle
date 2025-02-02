@@ -7,7 +7,7 @@ from scipy.stats import ttest_ind
 import openpyxl
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import PatternFill, Border, Side
+from openpyxl.styles import PatternFill, Border, Side, Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 
 
@@ -99,10 +99,8 @@ def compare_files(folder_path):
             label_file = os.path.join(folder_path, base_name + '.csv')
             if os.path.exists(label_file):
                 sheet_name = base_name  # Sheet name based on file base name
-                overall_accuracy, class_accuracy, misclassification_matrix,misclassification_matrix_freq, nr_value, r_value, w_value = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
-                # Compute the confusion matrix for the current file
-                # Accumulate the confusion matrices
-
+                overall_accuracy, class_accuracy, misclassification_matrix, misclassification_matrix_freq, nr_value, r_value, w_value = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
+                
                 print("Confusion matrix for {}: \n{}".format(sheet_name, misclassification_matrix))
 
                 if combined_confusion_matrix is None:
@@ -117,18 +115,32 @@ def compare_files(folder_path):
                 average_across_files.append(overall_accuracy)
                 print("Overall Accuracy: {:.2f}%".format(overall_accuracy))
                 print("Class Accuracy: {}".format(class_accuracy))    
-                # Analyze misclassifications (False Positives)            
-                # Write to Excel
-                results = pd.DataFrame({
-                    'Overall Accuracy': [overall_accuracy],
-                    'Class Accuracy': [class_accuracy.to_dict()],
-                    'Misclassification Matrix': [misclassification_matrix.to_dict()],
-                    'NR Value': [nr_value],
-                    'R Value': [r_value],
-                    'W Value': [w_value]
-                })
                 
-                results.to_excel(writer, sheet_name=sheet_name, index=False)
+                # Create detailed results DataFrame
+                results = pd.DataFrame({
+                    'Metric': ['Overall Accuracy', 'NR Accuracy', 'R Accuracy', 'W Accuracy', 
+                             'NR Total Samples', 'R Total Samples', 'W Total Samples'],
+                    'Value': [
+                        f"{overall_accuracy:.2f}%",
+                        f"{nr_value:.2f}%",
+                        f"{r_value:.2f}%",
+                        f"{w_value:.2f}%",
+                        misclassification_matrix_freq.sum(axis=1)['NR'] if 'NR' in misclassification_matrix_freq.index else 0,
+                        misclassification_matrix_freq.sum(axis=1)['R'] if 'R' in misclassification_matrix_freq.index else 0,
+                        misclassification_matrix_freq.sum(axis=1)['W'] if 'W' in misclassification_matrix_freq.index else 0
+                    ]
+                })
+
+                # Write results to Excel
+                results.to_excel(writer, sheet_name=sheet_name, startrow=0, index=False)
+                
+                # Add percentage confusion matrix
+                writer.sheets[sheet_name].cell(row=10, column=1, value="Confusion Matrix (Percentages)")
+                misclassification_matrix.to_excel(writer, sheet_name=sheet_name, startrow=11)
+                
+                # Add frequency confusion matrix
+                writer.sheets[sheet_name].cell(row=17, column=1, value="Confusion Matrix (Frequencies)")
+                misclassification_matrix_freq.to_excel(writer, sheet_name=sheet_name, startrow=18)
         if combined_confusion_matrix is not None:
             # Normalize the combined confusion matrix again to ensure it's a proper percentage
             combined_confusion_matrix = combined_confusion_matrix.div(combined_confusion_matrix.sum(axis=1), axis=0) * 100
@@ -150,147 +162,177 @@ def compare_files(folder_path):
             plt.show()
     loop_files_to_compare(folder_path, output_excel_path)
 
-
-
-
-
-
 def plot_mismatches(prediction_file, label_file):
-    print("Prediction file: ", prediction_file)
+    """
+    Plots mismatches between prediction and label files in 2-hour segments.
+    """
+    print(f"Comparing {os.path.basename(prediction_file)} with {os.path.basename(label_file)}")
+
     # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch','Prediction'])
+    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch', 'Prediction'])
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
-    prediction_file_name = os.path.basename(prediction_file)
-    label_file_name = os.path.basename(label_file)
+    
+    # Normalize label states
     labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
 
-    print("Comparing {} and {}".format(prediction_file_name, label_file_name))
-    
-    # Combine predictions and labels into a single DataFrame for easier analysis
+    # Combine predictions and labels
     combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
-    
-    # Determine the number of rows and calculate the number of plots needed
+
+    # Determine the number of plots needed
     num_rows = len(combined)
-    rows_per_plot = 2 * 3600 // 4  # 2 hours worth of data, assuming each row is 4 seconds
+    rows_per_plot = 2 * 3600 // 4  # 2 hours of data, assuming each row is 4 seconds
     num_plots = (num_rows // rows_per_plot) + 1
-    
+
     for i in range(num_plots):
         start_row = i * rows_per_plot
         end_row = min((i + 1) * rows_per_plot, num_rows)
-        
+
         # Plot the predictions and labels for the current segment
         plt.figure(figsize=(12, 6))
         plt.plot(combined['Prediction'][start_row:end_row].reset_index(drop=True), label='Prediction', color='blue')
         plt.plot(combined['Label'][start_row:end_row].reset_index(drop=True), label='Label', color='green')
-        
-        # Add vertical lines where there are mismatches
-        mismatches = combined[start_row:end_row][combined['Correct'] == False].index - start_row
-        # for mismatch in mismatches:
-        #     plt.axvline(x=mismatch, color='red', linestyle='--', linewidth=0.5)
-        
-        plt.title(f"Predictions vs Labels with Mismatches (Segment {i + 1})")
-        plt.xlabel("Time (in 2-hour segments)")
-        plt.ylabel("Stage")
+
+        plt.title(f"Predictions vs Labels (Segment {i + 1})")
+        plt.xlabel("Time (2-hour segments)")
+        plt.ylabel("Sleep Stage")
         plt.legend()
         plt.show()
 
 
-
-def save_mismatches_to_excel(prediction_file, label_file, output_file):
+def save_mismatches_to_excel(prediction_file, label_file):
+    """
+    Identifies mismatches between prediction and label files, 
+    calculates quarterly errors, and returns mismatch data.
+    """
     # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Prediction'])
+    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch', 'Prediction'])
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
-    labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
 
-    # Combine predictions and labels into a single DataFrame for easier analysis
+    # Normalize label states
+    labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
+    base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
+
+    # Combine predictions and labels
     combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
-    
-    # Find the mismatches
-    mismatches = combined[combined['Correct'] == False]
-    
-    # Save mismatches to an Excel file with highlighting
-    with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-        mismatches.to_excel(writer, sheet_name='Mismatches', index=True)
-        workbook = writer.book
-        worksheet = writer.sheets['Mismatches']
-        
-        # Apply conditional formatting to highlight mismatches
-        from openpyxl.formatting.rule import FormulaRule
-        yellow_fill = openpyxl.styles.PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-        for row in range(2, len(mismatches) + 2):
-            worksheet.conditional_formatting.add(f'C{row}:D{row}', 
-                FormulaRule(formula=[f'$C{row}<>$D{row}'], fill=yellow_fill))
 
-def analyze_mismatches(prediction_file, label_file, output_file):
-    # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Prediction'])
+    # Find mismatches
+    mismatches = combined[combined['Correct'] == False].copy()
+    
+    # Calculate quarterly errors
+    mismatches['Quarter'] = pd.qcut(mismatches.index, 4, labels=['Q1', 'Q2', 'Q3', 'Q4'])
+    quarterly_errors = mismatches['Quarter'].value_counts().sort_index()
+
+    return mismatches, quarterly_errors
+
+
+def analyze_mismatches(prediction_file, label_file):
+    """
+    Analyzes mismatches and computes error statistics.
+    """
+    # Load CSV files
+    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch', 'Prediction'])
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
-    labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
 
-    # Combine predictions and labels into a single DataFrame for easier analysis
+    # Normalize label states
+    labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
+    base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
+
+    # Combine predictions and labels
     combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
-    
-    # Find the mismatches
+
+    # Calculate statistics
     mismatches = combined[combined['Correct'] == False]
-    
-    # Calculate frequency and percentage of mismatches for each class
-    mismatch_counts = mismatches['Label'].value_counts()
-    total_counts = combined['Label'].value_counts()
-    
-    # Calculate basic statistics
-    overall_accuracy = combined['Correct'].mean() * 100
-    
-    # Perform t-test to see if there's a significant difference between the classes
     nr_errors = mismatches[mismatches['Label'] == 'NR'].shape[0]
     r_errors = mismatches[mismatches['Label'] == 'R'].shape[0]
     w_errors = mismatches[mismatches['Label'] == 'W'].shape[0]
-    t_stat, p_value = ttest_ind([nr_errors, r_errors, w_errors], [total_counts['NR'], total_counts['R'], total_counts['W']])
-    
-    # Calculate quarterly percentile score of errors
-    mismatches = mismatches.copy()  # Create a copy to avoid the SettingWithCopyWarning
-    mismatches.loc[:, 'Quarter'] = pd.qcut(mismatches.index, 4, labels=['Q1', 'Q2', 'Q3', 'Q4'])
-    quarterly_errors = mismatches['Quarter'].value_counts().sort_index()
-    
-    # Save mismatches and statistics to an Excel file with highlighting
-    with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-        mismatches.to_excel(writer, sheet_name='Mismatches', index=True)
-        worksheet = writer.sheets['Mismatches']
-        
-        # Apply conditional formatting to highlight mismatches
-        for row in range(2, len(mismatches) + 2):
-            yellow_fill = openpyxl.styles.PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-            worksheet.conditional_formatting.add(f'C{row}:D{row}', 
-                FormulaRule(formula=[f'$C{row}<>$D{row}'], fill=yellow_fill))
-        
-        # Save statistics to another sheet
-        stats = pd.DataFrame({
-            'Overall Accuracy': [overall_accuracy],
-            'NR Errors': [nr_errors],
-            'R Errors': [r_errors],
-            'W Errors': [w_errors],
-            'T-Statistic': [t_stat],
-            'P-Value': [p_value]
-        })
-        stats.to_excel(writer, sheet_name='Statistics', index=False)
-        
-        # Save quarterly errors to another sheet
-        quarterly_errors.to_excel(writer, sheet_name='Quarterly Errors', index=True)
+    total_errors = len(mismatches)
+    accuracy = (len(combined) - total_errors) / len(combined) * 100
 
+    # Create summary row
+    summary = pd.DataFrame({
+        'Filename': [base_name],
+        'Total Errors': [total_errors],
+        'NR Errors': [nr_errors],
+        'R Errors': [r_errors],
+        'W Errors': [w_errors],
+        'Accuracy': [accuracy]
+    })
+
+    return summary
+
+
+def write_summary_to_excel(all_mismatches, all_quarterly_errors, all_summaries, output_file):
+    """
+    Writes all mismatches, quarterly errors, and summary statistics to an Excel file.
+    """
+    with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+        for filename, mismatches in all_mismatches.items():
+            mismatches.to_excel(writer, sheet_name=f'{filename}_mismatch', index=True)
+
+        # Write quarterly errors summary
+        quarterly_summary = pd.DataFrame.from_dict(all_quarterly_errors, orient='index').fillna(0)
+        quarterly_summary.columns = ['Q1', 'Q2', 'Q3', 'Q4']
+        quarterly_summary.to_excel(writer, sheet_name='Quarterly_Errors')
+
+        # Write summary statistics
+        summary_df = pd.concat(all_summaries, ignore_index=True)
+        summary_df.to_excel(writer, sheet_name='Summary_Statistics', index=False)
+
+    # Apply formatting
+    wb = load_workbook(output_file)
+    for sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+        for cell in ws[1]:  # Bold headers
+            cell.font = Font(bold=True)
+        
+        # Add borders
+        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                             top=Side(style='thin'), bottom=Side(style='thin'))
+        for row in ws.iter_rows():
+            for cell in row:
+                cell.border = thin_border
+
+        # Highlight mismatched 'R' in Prediction column (Red)
+        red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+
+        # Highlight mismatched 'R' in Label column (Yellow)
+        yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+
+        for row in ws.iter_rows(min_row=2):
+            if row[1].value == 'R':  # Prediction column
+                row[1].fill = red_fill
+            if row[2].value == 'R':  # Label column
+                row[2].fill = yellow_fill
+
+    wb.save(output_file)
 
 
 def loop_files_to_compare(folder_path, output_excel_path):
-    # first check for .csv and _predictions.csv files
+    """
+    Loops through files in the folder, compares prediction and label files, 
+    and writes mismatch data to an Excel file.
+    """
     csv_files = glob.glob(os.path.join(folder_path, '*.csv'))
     prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
-    for file_to_compare in csv_files:
-        prediction_file = file_to_compare.replace('.csv', '_predictions.csv')
+
+    all_mismatches = {}
+    all_quarterly_errors = {}
+    all_summaries = []
+
+    for label_file in csv_files:
+        prediction_file = label_file.replace('.csv', '_predictions.csv')
         if prediction_file in prediction_files:
-            plot_mismatches(prediction_file, file_to_compare)
-            save_mismatches_to_excel(prediction_file, file_to_compare, output_excel_path)
-            analyze_mismatches(prediction_file, file_to_compare, output_excel_path)
+            base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
+            plot_mismatches(prediction_file, label_file)
+            mismatches, quarterly_errors = save_mismatches_to_excel(prediction_file, label_file)
+            summary = analyze_mismatches(prediction_file, label_file)
 
+            all_mismatches[base_name] = mismatches
+            all_quarterly_errors[base_name] = quarterly_errors.to_dict()
+            all_summaries.append(summary)
 
-
+    # Write results to Excel
+    write_summary_to_excel(all_mismatches, all_quarterly_errors, all_summaries, output_excel_path)
