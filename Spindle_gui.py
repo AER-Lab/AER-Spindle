@@ -317,7 +317,14 @@ instructions4_label = tk.Label(root, text="Compare prediction output CSV files t
 step4_label.pack(pady=(20, 5))
 instructions4_label.pack(pady=(5, 10))
 
-compare_button = tk.Button(root, text="Compare Predictions", command=compare_files, **button_style)
+def compare_predictions():
+    folder_path = filedialog.askdirectory(title="Select Folder Containing Predictions and Annotations")
+    if folder_path:
+        compare_files(folder_path)
+    else:
+        messagebox.showwarning("No Folder Selected", "Please select a folder to compare files.")
+
+compare_button = tk.Button(root, text="Compare Predictions", command=compare_predictions, **button_style)
 compare_button.pack(pady=10)
 
 
