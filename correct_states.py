@@ -27,6 +27,7 @@ def correct_states(df):
                 # Identify if W preceding 'R' is shorter than 5
                 start_w = i
                 end_w = i
+                start_r = i
                 while start_w > 0 and df.loc[start_w - 1, 'State'] == 'W':
                     start_w -= 1
                 w_length = end_w - start_w + 1

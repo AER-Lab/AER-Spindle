@@ -331,7 +331,7 @@ compare_button.pack(pady=10)
 
 # Step 5: Correct States
 step5_label = tk.Label(root, text="Step 5: Correct States (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions5_label = tk.Label(root, text="Correct state predictions using specific rules. \n 1) Select input folder containing _predictions.csv files and output folder for corrected states.", 
+instructions5_label = tk.Label(root, text="Correct state predictions using specific rules. \n 1) Select input folder containing _predictions.csv files \n 2) Select output folder for corrected states.", 
                             font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step5_label.pack(pady=(20, 5))
 instructions5_label.pack(pady=(5, 10))

@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 SPINDLE_MODEL-*
+SPINDLE
 
 # txt files
 *.txt
