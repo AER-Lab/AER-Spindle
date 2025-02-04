@@ -142,16 +142,16 @@ def correct_states(df):
 def process_files(input_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     for file in os.listdir(input_dir):
-        if file.endswith('.csv'):
+        if file.endswith('_predictions.csv'):
             df = pd.read_csv(os.path.join(input_dir, file), header=None)
             df.columns = ['Time', 'State']
             df_corrected = correct_states(df)
             df_corrected.to_csv(os.path.join(output_dir, file.replace('.csv', '-correct.csv')), index=False)
             print(f"Processed: {file}")
 
-# Define paths
-input_dir = '/content/testing'
-output_dir = '/content/testing-output2' # The folder will be automatically created if doesn't exists
+# # Define paths
+# input_dir = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
+# output_dir = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test' # The folder will be automatically created if doesn't exists
 
-# Process all CSV files in the directory
-process_files(input_dir, output_dir)
+# # Process all CSV files in the directory
+# process_files(input_dir, output_dir)

@@ -15,6 +15,7 @@ from compare_prediction_accuracy import compare_files
 from load_data_prediction import load_data_prediction
 from predict_sleep_stages import predict_sleep_stages
 import time
+from correct_states import process_files
 
 
 
@@ -255,7 +256,7 @@ def Prediction():
 # Create the main window
 root = tk.Tk()
 root.title("AER-Lab Model Building")
-root.geometry("750x900")
+root.geometry("750x1020")
 root.configure(bg='#2E4053')
 
 # Custom Font
@@ -328,6 +329,28 @@ compare_button = tk.Button(root, text="Compare Predictions", command=compare_pre
 compare_button.pack(pady=10)
 
 
+# Step 5: Correct States
+step5_label = tk.Label(root, text="Step 5: Correct States (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions5_label = tk.Label(root, text="Correct state predictions using specific rules. \n 1) Select input folder containing _predictions.csv files and output folder for corrected states.", 
+                            font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step5_label.pack(pady=(20, 5))
+instructions5_label.pack(pady=(5, 10))
 
+def correct_states_handler():
+    input_folder = filedialog.askdirectory(title="Select Input Folder with Predictions")
+    if not input_folder:
+        messagebox.showwarning("No Input Folder", "Please select an input folder.")
+        return
+        
+    output_folder = filedialog.askdirectory(title="Select Output Folder for Corrected States")
+    if not output_folder:
+        messagebox.showwarning("No Output Folder", "Please select an output folder.")
+        return
+        
+    process_files(input_folder, output_folder)
+    messagebox.showinfo("Success", "States corrected successfully!")
+
+correct_states_button = tk.Button(root, text="Correct States", command=correct_states_handler, **button_style)
+correct_states_button.pack(pady=10)
 # Run the GUI loop
 root.mainloop()
