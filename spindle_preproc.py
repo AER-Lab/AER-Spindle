@@ -36,7 +36,7 @@ class SpindlePreproc:
         downsampled_signals = []
         print("SIGNAL HEADER ###: ", signal_header)
         for i, sig in enumerate(all_signals):
-            srate = signal_header[i]['sample_frequency']
+            srate = signal_header[i]['sample_rate']
             if srate != self.target_srate:
                 downsampled_signals.append(utils.resample(
                     sig[np.newaxis], srate, self.target_srate))

@@ -36,7 +36,7 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         print("There are ", channel_pairs, "pairs of channels in the dataframe")
 
     # Get the sample frequency from metadata
-    sample_frequency = meta_data[0]['sample_frequency']
+    sample_frequency = meta_data[0]['sample_rate']
     print("Sample frequency: ", sample_frequency, "Hz")
 
     # Create a time axis in the specified unit

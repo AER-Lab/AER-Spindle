@@ -95,7 +95,7 @@ def compare_files(folder_path):
         average_across_files = []
         combined_confusion_matrix = None
         for prediction_file in prediction_files:
-            base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
+            base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions-correct', '')
             label_file = os.path.join(folder_path, base_name + '.csv')
             if os.path.exists(label_file):
                 sheet_name = base_name  # Sheet name based on file base name
@@ -237,7 +237,7 @@ def analyze_mismatches(prediction_file, label_file):
 
     # Normalize label states
     labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
-    base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
+    base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions-correct', '')
 
     # Combine predictions and labels
     combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
@@ -325,7 +325,7 @@ def loop_files_to_compare(folder_path, output_excel_path):
     for label_file in csv_files:
         prediction_file = label_file.replace('.csv', '_predictions.csv')
         if prediction_file in prediction_files:
-            base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
+            base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions-correct', '')
             plot_mismatches(prediction_file, label_file)
             mismatches, quarterly_errors = save_mismatches_to_excel(prediction_file, label_file)
             summary = analyze_mismatches(prediction_file, label_file)

@@ -160,7 +160,7 @@ def Prediction():
         return
     
     # Step 2: Ask user to select the folder containing the prediction files
-    folder_file_prediction = filedialog.askdirectory(title="Select Folder for Prediction Files")
+    folder_file_prediction = filedialog.askdirectory(title="Select Folder to predict files")
     
     if not folder_file_prediction:
         messagebox.showwarning("No Folder Selected", "Please select a folder for prediction files.")
@@ -230,6 +230,7 @@ def Prediction():
     for idx, file_base in enumerate(edf_files, start=1):
         file_base = file_base.split('.')[0]
         example_file_prediction = os.path.join(folder_file_prediction, f"{file_base}.edf")
+        print("Predicting for:", example_file_prediction)
 
         # Load data for prediction
         data = load_data_prediction(example_file_prediction, SPINDLE_PREPROCESSING_PARAMS)
@@ -287,9 +288,9 @@ read_raw_edf_button = tk.Button(root, text="Visualize Data", command=Read_plot_E
 read_raw_edf_button.pack(pady=10)
 
 # Step 2: Train Model
-step2_label = tk.Label(root, text="Step 2: Train Your Model Using Spindle Parameters (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions2_label = tk.Label(root, text="Train a model on EDF files with matching CSV annotations. \n EDF & CSV files should have corresponding names [file_1.edf, file_1.csv]. \n CSVs must have two columns: Timestamp or Epoch # in the first column and labels [(W, NR, R) OR (2, 3, 1)] in the second column."
-                                           "\n Select a folder containing the edf/csv files and specify a name & the destination folder for the trained model weight file.", 
+step2_label = tk.Label(root, text="Step 2: Train your model using spindle parameters (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions2_label = tk.Label(root, text="Train a model on EDF files with matching CSV annotations. \n EDF & CSV files should have corresponding names [file_1.edf, file_1.csv]. \n CSVs nust have labels in the second column  [(W, NR, R) or (2, 3, 1)]"
+                                           "\n 1) Select a folder containing the edf/csv files \n 2) Specify a name \n 3) Select a destination folder for the trained model weight file.", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step2_label.pack(pady=(20, 5))
 instructions2_label.pack(pady=(5, 10))
@@ -300,9 +301,9 @@ Training_button.pack(pady=10)
 current_directory = os.getcwd()
 
 # Step 3: Run Predictions
-step3_label = tk.Label(root, text="Step 3: Predict Using Your Trained Model or the AER Model (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions3_label = tk.Label(root, text=f"Predict sleep/wake states using your trained model or the AER model (Spindle_MM.pth - Located at {current_directory}). \n "
-                                           "1. Select the model weights file. \n 2. Choose the folder with EDF files for predictions.", 
+step3_label = tk.Label(root, text="Step 3: Predict Sleep/Wake states", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions3_label = tk.Label(root, text=f"Use either your trained model or the 'AER Lab' model \n {current_directory}\\Spindle_MM.pth.\n"
+                                           "1) Select the model weights file. \n 2) Choose the folder with EDF files for predictions.", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step3_label.pack(pady=(20, 5))
 instructions3_label.pack(pady=(5, 10))
@@ -310,31 +311,13 @@ instructions3_label.pack(pady=(5, 10))
 Prediction_button = tk.Button(root, text="Run Predictions", command=Prediction, **button_style)
 Prediction_button.pack(pady=10)
 
-# Step 4: Compare Predictions
-step4_label = tk.Label(root, text="Step 4: Compare Predictions to Annotations/Labels (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions4_label = tk.Label(root, text="Compare prediction output CSV files to annotations to evaluate model accuracy. "
-                                           "Select a folder with matching prediction and annotation files.", 
-                                font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+# Step 4: Evaluate
+step4_label = tk.Label(root, text="Step 4: Evaluate", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions4_label = tk.Label(root, text="Correct state predictions using specific rules and compare with annotations."
+                                        "\n\nTo correct states: \n1) Select input folder with _predictions.csv files \n2) Select output folder for corrected states.", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step4_label.pack(pady=(20, 5))
 instructions4_label.pack(pady=(5, 10))
 
-def compare_predictions():
-    folder_path = filedialog.askdirectory(title="Select Folder Containing Predictions and Annotations")
-    if folder_path:
-        compare_files(folder_path)
-    else:
-        messagebox.showwarning("No Folder Selected", "Please select a folder to compare files.")
-
-compare_button = tk.Button(root, text="Compare Predictions", command=compare_predictions, **button_style)
-compare_button.pack(pady=10)
-
-
-# Step 5: Correct States
-step5_label = tk.Label(root, text="Step 5: Correct States (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions5_label = tk.Label(root, text="Correct state predictions using specific rules. \n 1) Select input folder containing _predictions.csv files \n 2) Select output folder for corrected states.", 
-                            font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
-step5_label.pack(pady=(20, 5))
-instructions5_label.pack(pady=(5, 10))
 
 def correct_states_handler():
     input_folder = filedialog.askdirectory(title="Select Input Folder with Predictions")
@@ -350,7 +333,25 @@ def correct_states_handler():
     process_files(input_folder, output_folder)
     messagebox.showinfo("Success", "States corrected successfully!")
 
-correct_states_button = tk.Button(root, text="Correct States", command=correct_states_handler, **button_style)
+correct_states_button = tk.Button(root, text="Correct states", command=correct_states_handler, **button_style)
 correct_states_button.pack(pady=10)
+
+
+
+def compare_predictions():
+    folder_path = filedialog.askdirectory(title="Select folder containing predictions and manual annotations")
+    if folder_path:
+        compare_files(folder_path)
+    else:
+        messagebox.showwarning("No Folder Selected", "Please select a folder to compare files.")
+
+instructions5_label = tk.Label(root, text="\nTo compare predictions: \n1) Select input folder containing predictions and manual annotations", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+instructions5_label.pack(pady=(5, 10))
+
+compare_button = tk.Button(root, text="Compare predictions", command=compare_predictions, **button_style)
+compare_button.pack(pady=10)
+
+
+
 # Run the GUI loop
 root.mainloop()

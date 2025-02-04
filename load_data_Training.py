@@ -9,11 +9,11 @@ import torch
     
 def map_labels(label):
     if label == 'W' or label == 'W*' or label==2:
-        return 2
+        return 0
     elif label == 'NR' or label == 'NR*' or label==3:
-        return 3
-    elif label == 'R'or label == 'R*' or label==1:
         return 1
+    elif label == 'R'or label == 'R*' or label==1:
+        return 2
     else:
         raise ValueError(f"Unexpected label: {label}")
     

@@ -150,9 +150,3 @@ def process_files(input_dir, output_dir):
             df_corrected.to_csv(os.path.join(output_dir, file.replace('.csv', '-correct.csv')), index=False)
             print(f"Processed: {file}")
 
-# # Define paths
-# input_dir = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test'
-# output_dir = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test' # The folder will be automatically created if doesn't exists
-
-# # Process all CSV files in the directory
-# process_files(input_dir, output_dir)
