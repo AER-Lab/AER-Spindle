@@ -8,7 +8,7 @@ import openpyxl
 from openpyxl.formatting.rule import FormulaRule
 
 # Setup the Excel writer
-folder_path = r"C:\Users\geosaad\Desktop\Main-Scripts\SpindleModelWeights_compare\Spindle-Prediction-Compare\MM_.50Hz-100Hz"
+folder_path = r"C:\Users\Public\Documents"
 excel_path = os.path.join(folder_path, "model_comparison_results.xlsx")
 prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
 output_excel_path = os.path.join(folder_path, "mismatches_summary.xlsx")
@@ -279,4 +279,3 @@ def loop_files_to_compare(folder_path):
             save_mismatches_to_excel(prediction_file, file_to_compare, output_excel_path)
             analyze_mismatches(prediction_file, file_to_compare, output_excel_path)
 
-compare_files()
