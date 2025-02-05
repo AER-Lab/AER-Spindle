@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from tkinter import font as tkfont
-from read_plot_raw_edf import read_plot_raw_edf
+from read_plot_raw_edf import bandpass_plot_data
 from load_data_Training import load_data_and_labels
 from train_model import train_model
 from torch.utils.data import DataLoader, TensorDataset
@@ -74,15 +74,18 @@ class ToolTip:
 # Function to handle folder selection and running stats/plots
 def Read_plot_EDF():
     edf_file = filedialog.askopenfilename(title="Select EDF File", filetypes=[("EDF files", "*.edf")])
-    if edf_file:
-        # Check if the selected file ends with '.edf'
-        if edf_file.lower().endswith(".edf"):
-            # Call your function with the selected EDF file
-            read_plot_raw_edf(edf_file)
-        else:
-            messagebox.showwarning("Invalid File", "Please select a valid .edf file.")
+    # Prompt user for filter parameters
+    eeg_low = simpledialog.askfloat("Filter Parameters", "Enter EEG low-pass cutoff (Hz):", initialvalue=0.5)
+    eeg_high = simpledialog.askfloat("Filter Parameters", "Enter EEG high-pass cutoff (Hz):", initialvalue=12)
+    emg_low = simpledialog.askfloat("Filter Parameters", "Enter EMG low-pass cutoff (Hz):", initialvalue=25)
+    emg_high = simpledialog.askfloat("Filter Parameters", "Enter EMG high-pass cutoff (Hz):", initialvalue=50)
+    filter_order = simpledialog.askinteger("Filter Parameters", "Enter filter order (default: 5):", initialvalue=5)
+
+    if all(v is not None for v in [eeg_low, eeg_high, emg_low, emg_high, filter_order]):
+        # Call function with selected file and parameters
+        bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high, filter_order)
     else:
-        messagebox.showwarning("No File Selected", "Please select an .edf file to continue.")
+        messagebox.showwarning("Invalid Parameters", "Please enter valid filter parameters.")
 
 def Training():
     # Step 1: User selects folder
@@ -278,8 +281,8 @@ step_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
 instructions_font = tkfont.Font(family="Helvetica", size=10)
 
 # Step 1: Visualize Data
-step1_label = tk.Label(root, text="Step 1: Visualize EEG/EMG Data (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions1_label = tk.Label(root, text="Select an EDF file with 1 EEG and 1 EMG channel", 
+step1_label = tk.Label(root, text="Step 1: Bandpass Filter & Plot EEG/EMG Data (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions1_label = tk.Label(root, text="Select an EDF file with 1 EEG and 1 EMG channel, then choose the filter parameters. \n", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step1_label.pack(pady=(20, 5))
 instructions1_label.pack(pady=(5, 10))
