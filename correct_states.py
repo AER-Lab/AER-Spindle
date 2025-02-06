@@ -147,6 +147,6 @@ def process_files(input_dir, output_dir):
             df = pd.read_csv(os.path.join(input_dir, file), header=None)
             df.columns = ['Time', 'State']
             df_corrected = correct_states(df)
-            df_corrected.to_csv(os.path.join(output_dir, file.replace('.csv', '-correct.csv')), index=False)
+            df_corrected.to_csv(os.path.join(output_dir, file.replace('.csv', '-correct.csv')), header=False, index=False)
             print(f"Processed: {file}")
 

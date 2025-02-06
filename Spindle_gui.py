@@ -266,9 +266,9 @@ root.configure(bg='#2E4053')
 custom_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
 
 # Create a header label
-header_label = tk.Label(root, text="Sleep/Wake States Annotations", font=tkfont.Font(family="Helvetica", size=22, weight="bold"),
-                        fg="#F7DC6F", bg='#2E4053')
-header_label.pack(pady=10)
+header_label = tk.Label(root, text="Sleep/Wake States Annotations", font=tkfont.Font(family="Helvetica", size=17, weight="bold"),
+                        fg="white", bg="#2E4053")
+header_label.pack(pady=2)
 
 # Create buttons with custom styling -old
 button_style = {"font": custom_font, "bg": "#1ABC9C", "fg": "white", "relief": tk.RAISED, "bd": 5, "width": 17, "height": 1}
@@ -280,45 +280,45 @@ step_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
 instructions_font = tkfont.Font(family="Helvetica", size=10)
 
 # Step 1: Visualize Data
-step1_label = tk.Label(root, text="Step 1: Bandpass Filter & Plot EEG/EMG Data (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions1_label = tk.Label(root, text="Select an EDF file with 1 EEG and 1 EMG channel, then choose the filter parameters. \n", 
+step1_label = tk.Label(root, text="Step 1: Plot raw and filtered EEG/EMG data (optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions1_label = tk.Label(root, text="Select an EDF file with 1 EEG and 1 EMG channel, then choose the band-pass filter parameters. \n", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
-step1_label.pack(pady=(20, 5))
-instructions1_label.pack(pady=(5, 10))
+step1_label.pack(pady=(10, 5))
+instructions1_label.pack(pady=(5, 5))
 
-read_raw_edf_button = tk.Button(root, text="Visualize Data", command=Read_plot_EDF, **button_style)
-read_raw_edf_button.pack(pady=10)
+read_raw_edf_button = tk.Button(root, text="Visualize data", command=Read_plot_EDF, **button_style)
+read_raw_edf_button.pack(pady=5)
 
 # Step 2: Train Model
-step2_label = tk.Label(root, text="Step 2: Train your model using spindle parameters (Optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions2_label = tk.Label(root, text="Train a model on EDF files with matching CSV annotations. \n EDF & CSV files should have corresponding names [file_1.edf, file_1.csv]. \n CSVs nust have labels in the second column  [(W, NR, R) or (2, 3, 1)]"
-                                           "\n 1) Select a folder containing the edf/csv files \n 2) Specify a name \n 3) Select a destination folder for the trained model weight file.", 
+step2_label = tk.Label(root, text="Step 2: Train your model using Spindle parameters (optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions2_label = tk.Label(root, text="Train a model on edf files with matching csv annotations. The edf & csv files should have corresponding names [file_1.edf, file_1.csv]. CSVs must have labels in the second column [(W, NR, R) or (2, 3, 1)]."
+                                           "\n 1) Select a folder containing the edf/csv files. \n 2) Name your model. \n 3) Select an output folder for the trained model weight file.", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
-step2_label.pack(pady=(20, 5))
-instructions2_label.pack(pady=(5, 10))
+step2_label.pack(pady=(10, 5))
+instructions2_label.pack(pady=(5, 5))
 
-Training_button = tk.Button(root, text="Train Model", command=Training, **button_style)
-Training_button.pack(pady=10)
+Training_button = tk.Button(root, text="Train model", command=Training, **button_style)
+Training_button.pack(pady=5)
 
 current_directory = os.getcwd()
 
-# Step 3: Run Predictions
-step3_label = tk.Label(root, text="Step 3: Predict Sleep/Wake states", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions3_label = tk.Label(root, text=f"Use either your trained model or the 'AER Lab' model \n {current_directory}\\Spindle_MM.pth.\n"
-                                           "1) Select the model weights file. \n 2) Choose the folder with EDF files for predictions.", 
+# Step 3: Predict States
+step3_label = tk.Label(root, text="Step 3: Predict sleep/wake states", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions3_label = tk.Label(root, text=f"Use either your trained model or the 'AER Lab' model located at: \n {current_directory}\\Spindle_MM.pth to predict states."
+                                           "\n1) Select the model weights file. 2) Indicate the folder containing the edf files for predictions.", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
-step3_label.pack(pady=(20, 5))
-instructions3_label.pack(pady=(5, 10))
+step3_label.pack(pady=(10, 5))
+instructions3_label.pack(pady=(5, 5))
 
-Prediction_button = tk.Button(root, text="Run Predictions", command=Prediction, **button_style)
-Prediction_button.pack(pady=10)
+Prediction_button = tk.Button(root, text="Predict states", command=Prediction, **button_style)
+Prediction_button.pack(pady=5)
 
 # Step 4: Evaluate
-step4_label = tk.Label(root, text="Step 4: Evaluate", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions4_label = tk.Label(root, text="Correct state predictions using specific rules and compare with annotations."
-                                        "\n\nTo correct states: \n1) Select input folder with _predictions.csv files \n2) Select output folder for corrected states.", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
-step4_label.pack(pady=(20, 5))
-instructions4_label.pack(pady=(5, 10))
+step4_label = tk.Label(root, text="Step 4: Correct state transitions", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions4_label = tk.Label(root, text="Correct non-physiological state transitions."
+                                        "To correct states: 1) Select input folder with '..._predictions.csv' files. 2) Select output folder for corrected states.", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step4_label.pack(pady=(10, 5))
+instructions4_label.pack(pady=(5, 5))
 
 
 def correct_states_handler():
@@ -338,7 +338,12 @@ def correct_states_handler():
 correct_states_button = tk.Button(root, text="Correct states", command=correct_states_handler, **button_style)
 correct_states_button.pack(pady=10)
 
-
+# Step 5: Evaluate
+step5_label = tk.Label(root, text="Step 5: Evaluate predictions (optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions5_label = tk.Label(root, text="Evaluate prediction accuracy (predicted vs. manually annotated)."
+                                        "\nTo compare predictions select input folder that contains both the corrected predictions ['..._predictions-correct.csv'] and manually annotated files.", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+step5_label.pack(pady=(10, 5))
+instructions5_label.pack(pady=(5, 5))
 
 def compare_predictions():
     folder_path = filedialog.askdirectory(title="Select folder containing predictions and manual annotations")
@@ -347,10 +352,8 @@ def compare_predictions():
     else:
         messagebox.showwarning("No Folder Selected", "Please select a folder to compare files.")
 
-instructions5_label = tk.Label(root, text="\nTo compare predictions: \n1) Select input folder containing the corrected predictions [_predictions-correct.csv] and annotation files", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
-instructions5_label.pack(pady=(5, 10))
 
-compare_button = tk.Button(root, text="Compare predictions", command=compare_predictions, **button_style)
+compare_button = tk.Button(root, text="Evaluate predictions", command=compare_predictions, **button_style)
 compare_button.pack(pady=10)
 
 
