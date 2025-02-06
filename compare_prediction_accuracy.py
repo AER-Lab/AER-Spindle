@@ -12,12 +12,13 @@ def compute_confusion_matrix(data, labels):
     # Assuming `data` is the predictions and `labels` are the actual labels
     return pd.crosstab(labels, data, normalize='index') * 100
 
-def plot_confusion_matrix(conf_matrix, title):
+def plot_confusion_matrix(conf_matrix, title, pdf_pages):
     plt.figure(figsize=(10, 8))
     sns.heatmap(conf_matrix, annot=True, fmt=".2f", cmap="Blues", cbar=True)
     plt.title(title)
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
+    pdf_pages.savefig()  # Save the current figure to the PDF
     plt.show()
 
 def compare_predictions_and_labels(prediction_file, label_file):
@@ -55,6 +56,7 @@ def define_folder_path(folder_path):
 
 def compare_files(folder_path):
     folder_path, excel_path, prediction_files, output_excel_path = define_folder_path(folder_path)
+    matrix_pdf_pages = PdfPages(os.path.join(folder_path, 'Matrix_plots.pdf'))
 
     print("Prediction files are: ", prediction_files)
 
@@ -78,8 +80,8 @@ def compare_files(folder_path):
                 else:
                     combined_confusion_matrix += misclassification_matrix
 
-                plot_confusion_matrix(misclassification_matrix, f"Confusion Matrix for {sheet_name}")
-                plot_confusion_matrix(misclassification_matrix_freq, f"Confusion Matrix for {sheet_name} (Frequency)")
+                plot_confusion_matrix(misclassification_matrix, f"Confusion Matrix for {sheet_name}", matrix_pdf_pages)
+                plot_confusion_matrix(misclassification_matrix_freq, f"Confusion Matrix for {sheet_name} (Frequency)", matrix_pdf_pages)
 
                 average_across_files.append(overall_accuracy)
                 print("Overall Accuracy: {:.2f}%".format(overall_accuracy))
@@ -102,8 +104,8 @@ def compare_files(folder_path):
         if combined_confusion_matrix is not None:
             # Normalize the combined confusion matrix again to ensure it's a proper percentage
             combined_confusion_matrix = combined_confusion_matrix.div(combined_confusion_matrix.sum(axis=1), axis=0) * 100
-            plot_confusion_matrix(combined_confusion_matrix, "Combined Confusion Matrix Across All Files")
-
+            plot_confusion_matrix(combined_confusion_matrix, "Combined Confusion Matrix Across All Files", matrix_pdf_pages)
+    matrix_pdf_pages.close()
     loop_files_to_compare(folder_path, output_excel_path)
 
 def plot_mismatches(prediction_file, label_file, pdf_pages):
@@ -150,13 +152,15 @@ def loop_files_to_compare(folder_path, output_excel_path):
     Loops through files in the folder, compares prediction and label files, 
     and writes mismatch data to an Excel file.
     """
-    pdf_pages = PdfPages(os.path.join(folder_path, 'mismatches.pdf'))
+    mismatch_pdf_pages = PdfPages(os.path.join(folder_path, 'Mismatch_plots.pdf'))
 
     csv_files = glob.glob(os.path.join(folder_path, '*.csv'))
     prediction_files = glob.glob(os.path.join(folder_path, '*_predictions-correct.csv'))
     for label_file in csv_files:
         prediction_file = label_file.replace('.csv', '_predictions-correct.csv')
         if prediction_file in prediction_files:
-            plot_mismatches(prediction_file, label_file, pdf_pages)
-    pdf_pages.close()  # Close the PDF file
+            plot_mismatches(prediction_file, label_file, mismatch_pdf_pages)
+    mismatch_pdf_pages.close()  # Close the PDF file
+
+
 
