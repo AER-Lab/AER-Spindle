@@ -125,22 +125,36 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
       filt_emg (array): Filtered EMG data.
       time_unit (str): Time unit label for x-axis.
     """
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, 12))
     
-    # EEG Comparison Plot
-    plt.subplot(2, 1, 1)
+    # Original EEG Plot
+    plt.subplot(4, 1, 1)
     plt.plot(time_axis, orig_eeg, label="Original EEG", linewidth=0.3)
-    plt.plot(time_axis, filt_eeg, label="Filtered EEG", linewidth=0.3)
-    plt.title("EEG Comparison")
+    plt.title("Original EEG")
     plt.xlabel(f"Time ({time_unit})")
     plt.ylabel("Amplitude")
     plt.legend()
     
-    # EMG Comparison Plot
-    plt.subplot(2, 1, 2)
+    # Filtered EEG Plot
+    plt.subplot(4, 1, 2)
+    plt.plot(time_axis, filt_eeg, label="Filtered EEG", linewidth=0.3)
+    plt.title("Filtered EEG")
+    plt.xlabel(f"Time ({time_unit})")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    
+    # Original EMG Plot
+    plt.subplot(4, 1, 3)
     plt.plot(time_axis, orig_emg, label="Original EMG", linewidth=0.1)
+    plt.title("Original EMG")
+    plt.xlabel(f"Time ({time_unit})")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    
+    # Filtered EMG Plot
+    plt.subplot(4, 1, 4)
     plt.plot(time_axis, filt_emg, label="Filtered EMG", linewidth=0.1)
-    plt.title("EMG Comparison")
+    plt.title("Filtered EMG")
     plt.xlabel(f"Time ({time_unit})")
     plt.ylabel("Amplitude")
     plt.legend()
