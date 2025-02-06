@@ -149,7 +149,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
     plt.show()
 
 
-def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high, order_magnitude):
+def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high, order_magnitude=5):
     # Read the EDF file
     signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
     fs = meta_data[0]['sample_rate']

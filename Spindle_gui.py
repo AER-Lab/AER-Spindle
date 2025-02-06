@@ -79,11 +79,10 @@ def Read_plot_EDF():
     eeg_high = simpledialog.askfloat("Filter Parameters", "Enter EEG high-pass cutoff (Hz):", initialvalue=12)
     emg_low = simpledialog.askfloat("Filter Parameters", "Enter EMG low-pass cutoff (Hz):", initialvalue=25)
     emg_high = simpledialog.askfloat("Filter Parameters", "Enter EMG high-pass cutoff (Hz):", initialvalue=50)
-    filter_order = simpledialog.askinteger("Filter Parameters", "Enter filter order (default: 5):", initialvalue=5)
 
-    if all(v is not None for v in [eeg_low, eeg_high, emg_low, emg_high, filter_order]):
+    if all(v is not None for v in [eeg_low, eeg_high, emg_low, emg_high]):
         # Call function with selected file and parameters
-        bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high, filter_order)
+        bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high)
     else:
         messagebox.showwarning("Invalid Parameters", "Please enter valid filter parameters.")
 
@@ -348,7 +347,7 @@ def compare_predictions():
     else:
         messagebox.showwarning("No Folder Selected", "Please select a folder to compare files.")
 
-instructions5_label = tk.Label(root, text="\nTo compare predictions: \n1) Select input folder containing predictions and manual annotations", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
+instructions5_label = tk.Label(root, text="\nTo compare predictions: \n1) Select input folder containing the corrected predictions [_predictions-correct.csv] and annotation files", font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 instructions5_label.pack(pady=(5, 10))
 
 compare_button = tk.Button(root, text="Compare predictions", command=compare_predictions, **button_style)

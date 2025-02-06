@@ -51,7 +51,7 @@ def plot_class_accuracy(class_accuracy, title):
 
 def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name):
     # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch #', 'Prediction'])
+    predictions = pd.read_csv(prediction_file)
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
     prediction_file_name = os.path.basename(prediction_file)
     label_file_name = os.path.basename(label_file)
@@ -60,7 +60,7 @@ def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_na
     print("Comparing {} and {}".format(prediction_file_name, label_file_name))
     
     # Combine predictions and labels into a single DataFrame for easier analysis
-    combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
+    combined = pd.DataFrame({'Prediction': predictions['State'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
     
     # Calculate overall accuracy
@@ -83,7 +83,7 @@ def compare_predictions_and_labels(prediction_file, label_file, writer, sheet_na
 def define_folder_path(folder_path):
     folder_path = folder_path
     excel_path = os.path.join(folder_path, "model_comparison_results.xlsx")
-    prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
+    prediction_files = glob.glob(os.path.join(folder_path, '*_predictions-correct.csv'))
     output_excel_path = os.path.join(folder_path, "mismatches_summary.xlsx")
     return folder_path, excel_path, prediction_files, output_excel_path
 
@@ -91,12 +91,17 @@ def define_folder_path(folder_path):
 def compare_files(folder_path):
     folder_path, excel_path, prediction_files, output_excel_path = define_folder_path(folder_path)
 
+    print("Prediction files are: ", prediction_files)
+
     with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
         average_across_files = []
         combined_confusion_matrix = None
         for prediction_file in prediction_files:
+            print("Processing file: {}".format(prediction_file))
             base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions-correct', '')
+            print("Basename: ", base_name)
             label_file = os.path.join(folder_path, base_name + '.csv')
+            print("prediction file and label file: ", prediction_file, label_file)
             if os.path.exists(label_file):
                 sheet_name = base_name  # Sheet name based on file base name
                 overall_accuracy, class_accuracy, misclassification_matrix, misclassification_matrix_freq, nr_value, r_value, w_value = compare_predictions_and_labels(prediction_file, label_file, writer, sheet_name)
@@ -169,14 +174,14 @@ def plot_mismatches(prediction_file, label_file):
     print(f"Comparing {os.path.basename(prediction_file)} with {os.path.basename(label_file)}")
 
     # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch', 'Prediction'])
+    predictions = pd.read_csv(prediction_file)
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
     
     # Normalize label states
     labels['Label'] = labels['Label'].replace(regex={r'W.*': 'W', r'R.*': 'R', r'NR.*': 'NR'})
 
     # Combine predictions and labels
-    combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
+    combined = pd.DataFrame({'Prediction': predictions['State'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
 
     # Determine the number of plots needed
@@ -206,7 +211,7 @@ def save_mismatches_to_excel(prediction_file, label_file):
     calculates quarterly errors, and returns mismatch data.
     """
     # Load the CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch', 'Prediction'])
+    predictions = pd.read_csv(prediction_file)
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
 
     # Normalize label states
@@ -214,7 +219,7 @@ def save_mismatches_to_excel(prediction_file, label_file):
     base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions', '')
 
     # Combine predictions and labels
-    combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
+    combined = pd.DataFrame({'Prediction': predictions['State'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
 
     # Find mismatches
@@ -232,7 +237,7 @@ def analyze_mismatches(prediction_file, label_file):
     Analyzes mismatches and computes error statistics.
     """
     # Load CSV files
-    predictions = pd.read_csv(prediction_file, header=None, names=['Epoch', 'Prediction'])
+    predictions = pd.read_csv(prediction_file)
     labels = pd.read_csv(label_file, header=None, names=['Time', 'Label'])
 
     # Normalize label states
@@ -240,7 +245,7 @@ def analyze_mismatches(prediction_file, label_file):
     base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions-correct', '')
 
     # Combine predictions and labels
-    combined = pd.DataFrame({'Prediction': predictions['Prediction'], 'Label': labels['Label']})
+    combined = pd.DataFrame({'Prediction': predictions['State'], 'Label': labels['Label']})
     combined['Correct'] = combined['Prediction'] == combined['Label']
 
     # Calculate statistics
@@ -316,14 +321,14 @@ def loop_files_to_compare(folder_path, output_excel_path):
     and writes mismatch data to an Excel file.
     """
     csv_files = glob.glob(os.path.join(folder_path, '*.csv'))
-    prediction_files = glob.glob(os.path.join(folder_path, '*_predictions.csv'))
+    prediction_files = glob.glob(os.path.join(folder_path, '*_predictions-correct.csv'))
 
     all_mismatches = {}
     all_quarterly_errors = {}
     all_summaries = []
 
     for label_file in csv_files:
-        prediction_file = label_file.replace('.csv', '_predictions.csv')
+        prediction_file = label_file.replace('.csv', '_predictions-correct.csv')
         if prediction_file in prediction_files:
             base_name = os.path.splitext(os.path.basename(prediction_file))[0].replace('_predictions-correct', '')
             plot_mismatches(prediction_file, label_file)
