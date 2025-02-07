@@ -17,7 +17,7 @@ def process_predictions(folder_path):
         folder_path (str): Path to the folder containing the CSV files.
     """
     # List all files in the folder ending with _predictions-correct.csv
-    csv_files = [f for f in os.listdir(folder_path) if f.endswith('_predictions-correct-dummy1.csv')]
+    csv_files = [f for f in os.listdir(folder_path) if f.endswith('_predictions-correct.csv')]
 
     results = []  # To store analysis summary for each file
 
@@ -27,7 +27,7 @@ def process_predictions(folder_path):
         df = pd.read_csv(file_path, header=None, names=['Time', 'State'])
         states = df['State'].tolist()
         total_points = len(states)
-        
+        # Step 1: Frequency count and percentage calculation
         # Frequency count for states W, NR, R
         frequency = {state: states.count(state) for state in ['W', 'NR', 'R']}
         
@@ -66,10 +66,11 @@ def process_predictions(folder_path):
         for idx, (state, duration) in enumerate(bout_durations, 1):
             print(f"  Bout {idx}: State: {state}, Duration: {duration} seconds")
         print("-" * 40)
-
+        # Step 2: Analyze bouts: count bouts per state and total duration per state
         # Analyze bouts: count bouts per state and total duration per state
         bout_counts = {state: 0 for state in ['W', 'NR', 'R']}
         bout_total_duration = {state: 0 for state in ['W', 'NR', 'R']}
+
         
         for state, duration in bout_durations:
             bout_counts[state] += 1
@@ -79,6 +80,10 @@ def process_predictions(folder_path):
         for state in ['W', 'NR', 'R']:
             print(f"  State {state}: {bout_counts[state]} bouts, Total duration: {bout_total_duration[state]} seconds")
         print("=" * 40)
+
+        #Step3:  mean bout duration is state total duration / state bout count
+        mean_bout_duration = {state: bout_total_duration[state] / bout_counts[state] if bout_counts[state] > 0 else 0
+                              for state in ['W', 'NR', 'R']}
 
         # Append results for CSV export
         results.append({
@@ -95,7 +100,10 @@ def process_predictions(folder_path):
             'R_bout_count': bout_counts['R'],
             'W_total_duration': bout_total_duration['W'],
             'NR_total_duration': bout_total_duration['NR'],
-            'R_total_duration': bout_total_duration['R']
+            'R_total_duration': bout_total_duration['R'],
+            'W_mean_duration': mean_bout_duration['W'],
+            'NR_mean_duration': mean_bout_duration['NR'],
+            'R_mean_duration': mean_bout_duration['R']
         })
 
     # Export the summary results to a CSV file in the same folder
