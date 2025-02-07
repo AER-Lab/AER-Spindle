@@ -72,7 +72,7 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         plt.show()
 
 # bandpass filter
-def bandpass_filter_channel1(data, fs, lowcut, highcut, order=5):
+def bandpass_filter_channel(data, fs, lowcut, highcut):
     """
     Bandpass filter for channel1 (EEG).
     
@@ -86,31 +86,15 @@ def bandpass_filter_channel1(data, fs, lowcut, highcut, order=5):
     Returns:
       array: Filtered data.
     """
+    # order should be calculated based on the sampling frequency
     nyquist = 0.5 * fs
+    order = 4
+    print("Order: ", order)
     low = lowcut / nyquist
     high = highcut / nyquist
     b, a = butter(order, [low, high], btype='band')
     return filtfilt(b, a, data)
 
-def bandpass_filter_channel2(data, fs, lowcut, highcut, order=5):
-    """
-    Bandpass filter for channel2 (EEG).
-    
-    Parameters:
-      data (array): The EEG channel2 data.
-      fs (float): Sampling frequency in Hz.
-      lowcut (float): Lower cutoff frequency.
-      highcut (float): Higher cutoff frequency.
-      order (int): Order of the filter (default=5).
-    
-    Returns:
-      array: Filtered data.
-    """
-    nyquist = 0.5 * fs
-    low = lowcut / nyquist
-    high = highcut / nyquist
-    b, a = butter(order, [low, high], btype='band')
-    return filtfilt(b, a, data)
 
 def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit='minutes'):
     """
@@ -163,7 +147,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
     plt.show()
 
 
-def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high, order_magnitude=5):
+def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high):
     # Read the EDF file
     signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
     fs = meta_data[0]['sample_rate']
@@ -176,9 +160,8 @@ def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high, order_mag
     eeg_highcut = eeg_high
     emg_lowcut = emg_low
     emg_highcut = emg_high
-    order = order_magnitude
-    filt_channel1 = bandpass_filter_channel1(channel1, fs, eeg_lowcut, eeg_highcut, order)
-    filt_channel2 = bandpass_filter_channel2(channel2, fs, emg_lowcut, emg_highcut, order)
+    filt_channel1 = bandpass_filter_channel(channel1, fs, eeg_lowcut, eeg_highcut)
+    filt_channel2 = bandpass_filter_channel(channel2, fs, emg_lowcut, emg_highcut)
 
     # Plot the comparison of original and filtered data
     total_samples = len(channel1)

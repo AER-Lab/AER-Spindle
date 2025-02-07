@@ -31,9 +31,9 @@ SPINDLE_PREPROCESSING_PARAMS = {
     # num_neighbors is the number of neighboring epochs to include for context. 4 means, 2 on each side (including the current epoch, so total 5)
     'num_neighbors': 4,
     # EEG-filtering and EMG-filtering are dictionaries with 'lfreq' and 'hfreq' keys
-    # EEG filter between 0.5 and 24 Hz, EMG filter between 0.5 and 30
+    # EEG filter between 0.5 and 12 Hz, EMG filter between 25 and 50
     'EEG-filtering': {'lfreq': 0.5, 'hfreq': 12},
-    'EMG-filtering': {'lfreq': 0.5, 'hfreq': 30}
+    'EMG-filtering': {'lfreq': 25, 'hfreq': 50}
 }
 
 learning_rate = 0.00005
@@ -280,8 +280,8 @@ step_font = tkfont.Font(family="Helvetica", size=14, weight="bold")
 instructions_font = tkfont.Font(family="Helvetica", size=10)
 
 # Step 1: Visualize Data
-step1_label = tk.Label(root, text="Step 1: Plot raw and filtered EEG/EMG data (optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions1_label = tk.Label(root, text="Select an EDF file with 1 EEG and 1 EMG channel, then choose the band-pass filter parameters. \n", 
+step1_label = tk.Label(root, text="Step 1: Plot raw and filtered EEG/EMG data", font=step_font, fg="#F7DC6F", bg="#2E4053")
+instructions1_label = tk.Label(root, text="Select a folder containing your EDF files, each with one EEG and one EMG channel, then choose the band-pass filter parameters. \n", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step1_label.pack(pady=(10, 5))
 instructions1_label.pack(pady=(5, 5))

@@ -47,7 +47,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
     # EEG-filtering and EMG-filtering are dictionaries with 'lfreq' and 'hfreq' keys
     # EEG filter between 0.5 and 12 Hz, EMG filter between 0.5 and 30
     'EEG-filtering': {'lfreq': 0.5, 'hfreq': 12},
-    'EMG-filtering': {'lfreq': 0.5, 'hfreq': 30}
+    'EMG-filtering': {'lfreq': 25, 'hfreq': 50}
 }
 
 
