@@ -51,6 +51,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
 }
 
 
+
 # load the data for preprocessing and plot spectrograms
 # 2.
 data, all_labels = load_data_and_labels(path_for_training, SPINDLE_PREPROCESSING_PARAMS)
@@ -62,6 +63,7 @@ data_shape = data.shape
 data_shape = data_shape[1:]
 
 target_tensor_shape = target_tensor.shape
+
 
 # Create DataLoader -DATA
 dataset = TensorDataset(data, all_labels)
