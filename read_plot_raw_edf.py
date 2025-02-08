@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pyedflib import highlevel
 from scipy.signal import butter, filtfilt
+import math
 
 # Define function to read and plot EDF file data V1
 def read_plot_raw_edf(edf_file, time_unit='minutes'):
@@ -72,28 +73,45 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         plt.show()
 
 # bandpass filter
-def bandpass_filter_channel(data, fs, lowcut, highcut):
+def bandpass_filter_channel(data, fs, lowcut, highcut, debug=False):
     """
-    Bandpass filter for channel1 (EEG).
+    Bandpass filter for a single channel.
     
     Parameters:
-      data (array): The EEG channel1 data.
-      fs (float): Sampling frequency in Hz.
-      lowcut (float): Lower cutoff frequency.
-      highcut (float): Higher cutoff frequency.
-      order (int): Order of the filter (default=5).
+        data (array-like): The channel data.
+        fs (float): Sampling frequency in Hz.
+        lowcut (float): Lower cutoff frequency.
+        highcut (float): Higher cutoff frequency.
+        debug (bool): If True, prints diagnostic information.
     
     Returns:
-      array: Filtered data.
+        np.ndarray: Filtered data.
     """
-    # order should be calculated based on the sampling frequency
+    # Validate parameters
+    if fs <= 0:
+        raise ValueError("Sampling frequency must be positive.")
+    
     nyquist = 0.5 * fs
-    order = 4
-    print("Order: ", order)
+    if not (0 < lowcut < highcut < nyquist):
+        raise ValueError("Cutoff frequencies must be between 0 and Nyquist frequency (fs/2), with lowcut < highcut.")
+    
+    # Dynamically determine the filter order based on sample rate.
+    # Note: This is a heuristic and may need adjustment for your application.
+    order = max(1, math.ceil(fs / 250))
+    print("Dynamic Order (based on sample rate):", order)
+
+    
+    # Normalize cutoff frequencies to the Nyquist frequency.
     low = lowcut / nyquist
     high = highcut / nyquist
+    
+    # Design Butterworth bandpass filter.
     b, a = butter(order, [low, high], btype='band')
-    return filtfilt(b, a, data)
+    
+    # Apply zero-phase filtering using filtfilt.
+    filtered_data = filtfilt(b, a, data)
+    
+    return filtered_data
 
 
 def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit='minutes'):
