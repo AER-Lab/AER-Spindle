@@ -43,7 +43,7 @@ drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
 
-expected_data_shape = (2,24,160)
+expected_data_shape = (2,32,160)
 
 
 # Tooltip class

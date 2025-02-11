@@ -1,8 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from pyedflib import highlevel
-from scipy.signal import butter, filtfilt
-import math
+from scipy.signal import butter, sosfiltfilt, buttord
+import numpy as np
 
 # Define function to read and plot EDF file data V1
 def read_plot_raw_edf(edf_file, time_unit='minutes'):
@@ -73,45 +73,59 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         plt.show()
 
 # bandpass filter
-def bandpass_filter_channel(data, fs, lowcut, highcut, debug=False):
+def bandpass_filter_channel(data, fs, lowcut, highcut, gpass=3, gstop=40, transition_ratio=0.2, debug=False):
     """
-    Bandpass filter for a single channel.
+    Bandpass filter with automatic order selection using buttord.
     
     Parameters:
-        data (array-like): The channel data.
-        fs (float): Sampling frequency in Hz.
-        lowcut (float): Lower cutoff frequency.
-        highcut (float): Higher cutoff frequency.
-        debug (bool): If True, prints diagnostic information.
+        data (array): Input signal
+        fs (float): Sampling frequency (Hz)
+        lowcut (float): Lower cutoff frequency (Hz)
+        highcut (float): Upper cutoff frequency (Hz)
+        gpass (float): Passband ripple (dB) - default 3dB
+        gstop (float): Stopband attenuation (dB) - default 40dB
+        transition_ratio (float): Transition band width as ratio of passband width
+        debug (bool): Show debug info
     
     Returns:
-        np.ndarray: Filtered data.
+        np.ndarray: Filtered signal
     """
-    # Validate parameters
+    # Validation
     if fs <= 0:
-        raise ValueError("Sampling frequency must be positive.")
+        raise ValueError("Sampling frequency must be positive")
     
     nyquist = 0.5 * fs
     if not (0 < lowcut < highcut < nyquist):
-        raise ValueError("Cutoff frequencies must be between 0 and Nyquist frequency (fs/2), with lowcut < highcut.")
-    
-    # Dynamically determine the filter order based on sample rate.
-    # Note: This is a heuristic and may need adjustment for your application.
-    order = max(1, math.ceil(fs / 250))
-    print("Dynamic Order (based on sample rate):", order)
+        raise ValueError(f"Invalid cutoff frequencies. Must satisfy: 0 < {lowcut} < {highcut} < {nyquist}")
 
+    # Calculate transition bandwidth (20% of passband width by default)
+    passband_width = highcut - lowcut
+    transition = transition_ratio * passband_width
     
-    # Normalize cutoff frequencies to the Nyquist frequency.
-    low = lowcut / nyquist
-    high = highcut / nyquist
+    # Set stopband edges with safety margins
+    stop_low = max(lowcut - transition, 0.1)  # Prevent 0Hz
+    stop_high = min(highcut + transition, nyquist * 0.99)  # Prevent Nyquist
     
-    # Design Butterworth bandpass filter.
-    b, a = butter(order, [low, high], btype='band')
+    # Normalize frequencies for digital filter design
+    Wp = np.array([lowcut, highcut]) / nyquist
+    Ws = np.array([stop_low, stop_high]) / nyquist
+
+    # Calculate optimal order and natural frequency
+    order, Wn = buttord(Wp, Ws, gpass, gstop)
+    print("Order: ", order)
     
-    # Apply zero-phase filtering using filtfilt.
-    filtered_data = filtfilt(b, a, data)
+    if debug:
+        print(f"Optimal order: {order}")
+        print(f"Natural frequency: {Wn * nyquist} Hz")
+        print(f"Stopbands: [{stop_low:.1f}, {stop_high:.1f}] Hz")
+
+    # Design SOS filter (better numerical stability)
+    sos = butter(order, Wn, btype='band', output='sos')
     
-    return filtered_data
+    # Zero-phase filtering (forward + backward)
+    filtered = sosfiltfilt(sos, data)
+    
+    return filtered
 
 
 def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit='minutes'):
