@@ -120,6 +120,7 @@ def correct_states(df):
             # Correct 3-4 episodes of 'R' surrounded by at least 4 'NR' on both sides
             if i > 3 and i < len(df) - 4:
                 if df.loc[i, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'NR':
+                    start_r = i
                     # Check for at least 4 'NR' after
                     if all(df.loc[i + h, 'State'] == 'NR' for h in range(1, 5)):
                         start_r2 = i

@@ -7,7 +7,6 @@ def train_model(model, criterion, optimizer, train_loader, epochs=10, progress=N
         model.train()
         running_loss = 0.0
         running_accuracy = 0.0  # Track accuracy across batches
-        epoch_start_time = time.time()
 
         for batch_idx, (inputs, labels) in enumerate(train_loader):
             optimizer.zero_grad()

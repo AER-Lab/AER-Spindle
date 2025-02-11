@@ -16,6 +16,7 @@ from load_data_prediction import load_data_prediction
 from predict_sleep_stages import predict_sleep_stages
 import time
 from correct_states import process_files
+import glob
 
 
 
@@ -32,7 +33,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
     'num_neighbors': 4,
     # EEG-filtering and EMG-filtering are dictionaries with 'lfreq' and 'hfreq' keys
     # EEG filter between 0.5 and 12 Hz, EMG filter between 25 and 50
-    'EEG-filtering': {'lfreq': 0.5, 'hfreq': 12},
+    'EEG-filtering': {'lfreq': 0.5, 'hfreq': 16},
     'EMG-filtering': {'lfreq': 25, 'hfreq': 50}
 }
 
@@ -102,6 +103,19 @@ def Training():
             return
         
         model_name = os.path.join(destination_folder, model_name + ".pth")
+        # Prompt user for EEG and EMG filter parameters
+        eeg_low = simpledialog.askfloat("Filter Parameters", "Enter EEG low-pass cutoff (Hz):", initialvalue=0.5)
+        eeg_high = simpledialog.askfloat("Filter Parameters", "Enter EEG high-pass cutoff (Hz):", initialvalue=12)
+        emg_low = simpledialog.askfloat("Filter Parameters", "Enter EMG low-pass cutoff (Hz):", initialvalue=25)
+        emg_high = simpledialog.askfloat("Filter Parameters", "Enter EMG high-pass cutoff (Hz):", initialvalue=50)
+
+        if None in [eeg_low, eeg_high, emg_low, emg_high]:
+            messagebox.showwarning("Invalid Parameters", "Please enter valid filter parameters.")
+            return
+
+        # Update SPINDLE_PREPROCESSING_PARAMS with user inputs
+        SPINDLE_PREPROCESSING_PARAMS['EEG-filtering'] = {'lfreq': eeg_low, 'hfreq': eeg_high}
+        SPINDLE_PREPROCESSING_PARAMS['EMG-filtering'] = {'lfreq': emg_low, 'hfreq': emg_high}
 
 
         # Step 3: Load data and labels
@@ -145,6 +159,18 @@ def Training():
         # Step 8: Save the model weights
         torch.save(model.state_dict(), model_name)
         print(f"Model weights saved successfully as {model_name}")
+        # Save the spindle processing parameters to a .txt file
+        edf_files = glob.glob(os.path.join(folder_path, '*.edf'))
+
+        params_txt_path = model_name.replace('.pth', '.txt')
+        with open(params_txt_path, 'w') as f:
+            # model path
+            f.write(f"Model path: {model_name}\n")
+            f.write(f"Trained using {len(edf_files)} EDF files \n{edf_files} \n")
+            f.write("Spindle preprocessing parameters:\n")
+            for key, value in SPINDLE_PREPROCESSING_PARAMS.items():
+                f.write(f"{key}: {value}\n")
+        print(f"Spindle processing parameters saved successfully as {params_txt_path}")
         
         # Close the progress window
         progress_window.destroy()
@@ -154,6 +180,34 @@ def Training():
 
 # Function to handle running the larger function
 def Prediction():
+    def read_spindle_preprocessing_params(params_txt_path):
+        params = {}
+        with open(params_txt_path, 'r') as f:
+            lines = f.readlines()
+        
+        # Find the start of the parameters section
+        start_idx = None
+        for idx, line in enumerate(lines):
+            if line.strip() == "Spindle preprocessing parameters:":
+                start_idx = idx + 1
+                break
+        if start_idx is None:
+            print("Header 'Spindle preprocessing parameters:' not found.")
+            return params
+        
+        # Parse parameter lines (key: value)
+        for line in lines[start_idx:]:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if ': ' in stripped:
+                key, value = stripped.split(': ', 1)
+                try:
+                    # Try to evaluate the value (e.g., dictionary or number)
+                    params[key] = eval(value)
+                except Exception:
+                    params[key] = value
+        return params
     # Step 1: Ask user to select the model weights file
     model_weights_file = filedialog.askopenfilename(title="Select Model Weights File", filetypes=[("PyTorch Model Files", "*.pth")])
     
@@ -173,14 +227,41 @@ def Prediction():
     def load_model_weights(model, filename):
         model.load_state_dict(torch.load(filename))
         model.eval()
-        return model
+        # Load the params using the same name as the model
+        params = read_spindle_preprocessing_params(filename.replace('.pth', '.txt'))
+        print("Model file name:", filename, "is loaded")
+        return model, params
+
+
 
     # Initialize the model (adjust according to your model structure)
     model = SpindleGraph(input_dim=expected_data_shape, nb_class=4, dropout_rate=0.5)  # Customize input_dim as per your needs
 
     # Step 4: Load the model weights
-    model = load_model_weights(model, model_weights_file)
+    model, params = load_model_weights(model, model_weights_file)
     print("Model weights loaded successfully:", model)
+    print("Spindle preprocessing parameters:", params)
+    
+    
+    
+    #  # Prompt user for EEG and EMG filter parameters
+    eeg_low = params['EEG-filtering']['lfreq']
+    eeg_high = params['EEG-filtering']['hfreq']
+    emg_low = params['EMG-filtering']['lfreq']
+    emg_high = params['EMG-filtering']['hfreq']
+    
+    # eeg_low = simpledialog.askfloat("Filter Parameters", "Enter EEG low-pass cutoff (Hz):", initialvalue=0.5)
+    # eeg_high = simpledialog.askfloat("Filter Parameters", "Enter EEG high-pass cutoff (Hz):", initialvalue=12)
+    # emg_low = simpledialog.askfloat("Filter Parameters", "Enter EMG low-pass cutoff (Hz):", initialvalue=25)
+    # emg_high = simpledialog.askfloat("Filter Parameters", "Enter EMG high-pass cutoff (Hz):", initialvalue=50)
+
+    # if None in [eeg_low, eeg_high, emg_low, emg_high]:
+    #     messagebox.showwarning("Invalid Parameters", "Please enter valid filter parameters.")
+    #     return
+
+    # Update SPINDLE_PREPROCESSING_PARAMS with user inputs
+    SPINDLE_PREPROCESSING_PARAMS['EEG-filtering'] = {'lfreq': eeg_low, 'hfreq': eeg_high}
+    SPINDLE_PREPROCESSING_PARAMS['EMG-filtering'] = {'lfreq': emg_low, 'hfreq': emg_high}
 
     # Step 5: Set up progress bar for prediction files
     progress_window = tk.Toplevel()
