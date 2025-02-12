@@ -33,7 +33,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
     'num_neighbors': 4,
     # EEG-filtering and EMG-filtering are dictionaries with 'lfreq' and 'hfreq' keys
     # EEG filter between 0.5 and 12 Hz, EMG filter between 25 and 50
-    'EEG-filtering': {'lfreq': 0.5, 'hfreq': 16},
+    'EEG-filtering': {'lfreq': 0.5, 'hfreq': 12},
     'EMG-filtering': {'lfreq': 25, 'hfreq': 50}
 }
 
@@ -43,7 +43,7 @@ drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
 
-expected_data_shape = (2,32,160)
+expected_data_shape = (2,24,160)
 
 
 # Tooltip class
@@ -161,6 +161,12 @@ def Training():
         print(f"Model weights saved successfully as {model_name}")
         # Save the spindle processing parameters to a .txt file
         edf_files = glob.glob(os.path.join(folder_path, '*.edf'))
+        print(f"Trained using {len(edf_files)} EDF files \n{edf_files} \n")
+        # replace \\ with /
+        # edf_files =
+        print("Replaced \\ with /", edf_files)
+
+        
 
         params_txt_path = model_name.replace('.pth', '.txt')
         with open(params_txt_path, 'w') as f:
@@ -331,6 +337,9 @@ def Prediction():
 
         # Update progress and estimated time after each file
         update_progress(idx)
+    # write a txt file to say which model was used to make predictions
+    with open(os.path.join(folder_file_prediction, 'model_used.txt'), 'w') as f:
+        f.write(f"Model used for predictions: {model_weights_file}")
 
     # Close progress window once predictions are complete
     progress_window.destroy()

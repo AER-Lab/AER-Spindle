@@ -117,6 +117,12 @@ def correct_states(df):
                 df.loc[i + 1, 'State'] = 'NR'
                 i += 1
 
+            # If one want to remove single epoches of W during NR, uncomment the below. 
+            # Correct single 'W' surrounded by 'NR' (NR-W-NR = NR-NR-NR)
+            #if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'W' and df.loc[i - 1, 'State'] == 'NR' and df.loc[i + 1, 'State'] == 'NR':
+                #df.loc[i, 'State'] = 'NR'
+                #i += 1
+                
             # Correct 3-4 episodes of 'R' surrounded by at least 4 'NR' on both sides
             if i > 3 and i < len(df) - 4:
                 if df.loc[i, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'NR':
