@@ -162,9 +162,7 @@ def Training():
         # Save the spindle processing parameters to a .txt file
         edf_files = glob.glob(os.path.join(folder_path, '*.edf'))
         print(f"Trained using {len(edf_files)} EDF files \n{edf_files} \n")
-        # replace \\ with /
-        # edf_files =
-        print("Replaced \\ with /", edf_files)
+
 
         
 
@@ -177,6 +175,13 @@ def Training():
             for key, value in SPINDLE_PREPROCESSING_PARAMS.items():
                 f.write(f"{key}: {value}\n")
         print(f"Spindle processing parameters saved successfully as {params_txt_path}")
+        
+        # replace backslashes with forward slashes for Windows paths
+        with open(params_txt_path, 'r') as f:
+            txt = f.read()
+        txt = txt.replace('\\', '/')
+        with open(params_txt_path, 'w') as f:
+            f.write(txt)
         
         # Close the progress window
         progress_window.destroy()

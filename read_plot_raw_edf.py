@@ -73,60 +73,55 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         plt.show()
 
 # bandpass filter
-def bandpass_filter_channel(data, fs, lowcut, highcut, gpass=3, gstop=40, transition_ratio=0.2, debug=False):
+def bandpass_filter_channel(data, fs, lowcut, highcut, order=4, 
+                          automatic_order=False, transition_ratio=0.2, debug=False):
     """
-    Bandpass filter with automatic order selection using buttord.
+    Simplified dynamic bandpass filter for biosignals with optional automatic order selection.
     
     Parameters:
-        data (array): Input signal
+        data (array): 1D signal array
         fs (float): Sampling frequency (Hz)
         lowcut (float): Lower cutoff frequency (Hz)
         highcut (float): Upper cutoff frequency (Hz)
-        gpass (float): Passband ripple (dB) - default 3dB
-        gstop (float): Stopband attenuation (dB) - default 40dB
-        transition_ratio (float): Transition band width as ratio of passband width
-        debug (bool): Show debug info
+        order (int): Default filter order (4) if automatic_order=False
+        automatic_order (bool): Enable automatic order calculation (uses transition_ratio)
+        transition_ratio (float): Transition band ratio (only used if automatic_order=True)
+        debug (bool): Print filter parameters
     
     Returns:
-        np.ndarray: Filtered signal
+        np.ndarray: Filtered signal with zero-phase distortion
     """
-    # Validation
-    if fs <= 0:
-        raise ValueError("Sampling frequency must be positive")
-    
-    nyquist = 0.5 * fs
-    if not (0 < lowcut < highcut < nyquist):
-        raise ValueError(f"Invalid cutoff frequencies. Must satisfy: 0 < {lowcut} < {highcut} < {nyquist}")
+    # Validate inputs
+    nyq = 0.5 * fs
+    if not (0 < lowcut < highcut < nyq):
+        raise ValueError(f"Cutoff frequencies must satisfy: 0 < {lowcut} < {highcut} < {nyq}")
 
-    # Calculate transition bandwidth (20% of passband width by default)
-    passband_width = highcut - lowcut
-    transition = transition_ratio * passband_width
-    
-    # Set stopband edges with safety margins
-    stop_low = max(lowcut - transition, 0.1)  # Prevent 0Hz
-    stop_high = min(highcut + transition, nyquist * 0.99)  # Prevent Nyquist
-    
-    # Normalize frequencies for digital filter design
-    Wp = np.array([lowcut, highcut]) / nyquist
-    Ws = np.array([stop_low, stop_high]) / nyquist
+    # Normalize frequencies
+    Wn = np.array([lowcut, highcut]) / nyq
 
-    # Calculate optimal order and natural frequency
-    order, Wn = buttord(Wp, Ws, gpass, gstop)
-    print("Order: ", order)
-    
+    if automatic_order:
+        from scipy.signal import buttord
+        # Calculate transition bandwidth
+        transition = transition_ratio * (highcut - lowcut)
+        stop_low = max(lowcut - transition, 0.1)
+        stop_high = min(highcut + transition, nyq * 0.99)
+        Ws = np.array([stop_low, stop_high]) / nyq
+
+        # Calculate optimal order
+        order, Wn = buttord(Wp=Wn, Ws=Ws, gpass=3, gstop=40)
+        if debug:
+            print(f"Auto-calculated order: {order}")
+
+    # Validate final order
+    if order < 2 or order > 30:
+        raise ValueError(f"Invalid filter order: {order} (must be 2-30)")
+
     if debug:
-        print(f"Optimal order: {order}")
-        print(f"Natural frequency: {Wn * nyquist} Hz")
-        print(f"Stopbands: [{stop_low:.1f}, {stop_high:.1f}] Hz")
+        print(f"Using order: {order}, Cutoffs: {Wn * nyq} Hz")
 
-    # Design SOS filter (better numerical stability)
+    # Create and apply filter
     sos = butter(order, Wn, btype='band', output='sos')
-    
-    # Zero-phase filtering (forward + backward)
-    filtered = sosfiltfilt(sos, data)
-    
-    return filtered
-
+    return sosfiltfilt(sos, data)
 
 def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit='minutes'):
     """
@@ -182,6 +177,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
 def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high):
     # Read the EDF file
     signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
+    print("Meta Data:", meta_data, "Meta Data 2:", meta_data2)
     fs = meta_data[0]['sample_rate']
     print("Sample frequency: ", fs, "Hz")
 

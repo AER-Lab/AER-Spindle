@@ -1,0 +1,11 @@
+Model path: C:\Users\geosaad\Desktop\Spindle-Custom\SPINDLE_model_MM.pth
+Trained using 2 EDF files 
+['C:/Users/geosaad/Desktop/Su-EEG-EDF-DATA/post-1.edf', 'C:/Users/geosaad/Desktop/Su-EEG-EDF-DATA/post-2.edf'] 
+Spindle preprocessing parameters:
+name: SpindlePreproc
+target_srate: 128
+spectrogram-stride: 16
+time_interval: 4
+num_neighbors: 4
+EEG-filtering: {'lfreq': 0.5, 'hfreq': 12.0}
+EMG-filtering: {'lfreq': 0.5, 'hfreq': 30.0}

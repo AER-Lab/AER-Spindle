@@ -5,9 +5,7 @@ __pycache__/
 
 SPINDLE_MODEL-*
 SPINDLE
-
-# txt files
-*.txt
+SPINDLE_MM_*
 
 # C extensions
 *.so
