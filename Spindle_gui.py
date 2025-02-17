@@ -43,7 +43,6 @@ drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
 
-expected_data_shape = (2,24,160)
 
 
 # Tooltip class
@@ -171,6 +170,7 @@ def Training():
             # model path
             f.write(f"Model path: {model_name}\n")
             f.write(f"Trained using {len(edf_files)} EDF files \n{edf_files} \n")
+            f.write(f"Model shape: \n {data_shape}\n")
             f.write("Spindle preprocessing parameters:\n")
             for key, value in SPINDLE_PREPROCESSING_PARAMS.items():
                 f.write(f"{key}: {value}\n")
@@ -180,6 +180,7 @@ def Training():
         with open(params_txt_path, 'r') as f:
             txt = f.read()
         txt = txt.replace('\\', '/')
+        txt = txt.replace('//', '/')
         with open(params_txt_path, 'w') as f:
             f.write(txt)
         
@@ -243,6 +244,28 @@ def Prediction():
         print("Model file name:", filename, "is loaded")
         return model, params
 
+    def read_model_shape(params_txt_path):
+        model_shape = None
+        with open(params_txt_path, 'r') as f:
+            lines = f.readlines()
+        for idx, line in enumerate(lines):
+            if line.strip() == "Model shape:":
+                # Read the next non-empty line and evaluate it as a tuple
+                for shape_line in lines[idx+1:]:
+                    shape_line = shape_line.strip()
+                    if shape_line:
+                        try:
+                            print("Shape line:", shape_line)
+                            # extract shape 'torch.Size([2, 24, 160])'
+                            shape = shape_line.split('[')[1].split(']')[0]
+                            model_shape = eval(shape)
+                            print("Model shape:", model_shape)
+                        except Exception as e:
+                            print("Error parsing model shape:", e)
+                        break
+                break
+        return model_shape
+    expected_data_shape = read_model_shape(model_weights_file.replace('.pth', '.txt'))
 
 
     # Initialize the model (adjust according to your model structure)
