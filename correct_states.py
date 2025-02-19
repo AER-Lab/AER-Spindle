@@ -141,6 +141,30 @@ def correct_states(df):
                             # Correct the 'R' sequence to 'NR'
                             df.loc[start_r2:end_r2, 'State'] = 'NR'
                             i += 1
+                            
+                            
+            # Correct 2-3 episodes of 'NR' surrounded by at least 4 'R' on both sides
+            if i > 3 and i < len(df) - 4:
+                # Check if current epoch is 'NR'
+                if df.loc[i, 'State'] == 'NR':
+                    # Find consecutive 'NR' sequence
+                    start_nr = i
+                    end_nr = i
+                    while end_nr + 1 < len(df) and df.loc[end_nr + 1, 'State'] == 'NR':
+                        end_nr += 1
+                    
+                    nr_length = end_nr - start_nr + 1
+                    
+                    # Check if NR sequence is 2-3 epochs long
+                    if nr_length == 2 or nr_length == 3:
+                        # Check for at least 4 'R' before
+                        if all(df.loc[start_nr - k, 'State'] == 'R' for k in range(1, 5)):
+                            # Check for at least 4 'R' after
+                            if all(df.loc[end_nr + k, 'State'] == 'R' for k in range(1, 5)):
+                                # Convert NR sequence to R
+                                df.loc[start_nr:end_nr, 'State'] = 'R'
+                                i = end_nr + 1
+                                continue  # Skip to the next epoch after the corrected sequence
 
             i += 1
 

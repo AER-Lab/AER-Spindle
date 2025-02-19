@@ -1,6 +1,8 @@
 Model path: C:\Users\geosaad\Desktop\Spindle-Custom\SPINDLE_model_MM.pth
 Trained using 2 EDF files 
 ['C:/Users/geosaad/Desktop/Su-EEG-EDF-DATA/post-1.edf', 'C:/Users/geosaad/Desktop/Su-EEG-EDF-DATA/post-2.edf'] 
+Model shape: 
+ torch.Size([2, 24, 160])
 Spindle preprocessing parameters:
 name: SpindlePreproc
 target_srate: 128

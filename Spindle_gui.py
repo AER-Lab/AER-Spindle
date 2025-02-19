@@ -266,6 +266,7 @@ def Prediction():
                 break
         return model_shape
     expected_data_shape = read_model_shape(model_weights_file.replace('.pth', '.txt'))
+    print("Expected data shape:", expected_data_shape)
 
 
     # Initialize the model (adjust according to your model structure)
@@ -399,7 +400,7 @@ instructions_font = tkfont.Font(family="Helvetica", size=10)
 
 # Step 1: Visualize Data
 step1_label = tk.Label(root, text="Step 1: Plot raw and filtered EEG/EMG data", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions1_label = tk.Label(root, text="Select a folder containing your EDF files, each with one EEG and one EMG channel, then choose the band-pass filter parameters. \n", 
+instructions1_label = tk.Label(root, text="Select an EDF file, with one EEG and one EMG channel, then choose the band-pass filter parameters. \n", 
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step1_label.pack(pady=(10, 5))
 instructions1_label.pack(pady=(5, 5))
