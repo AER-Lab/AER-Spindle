@@ -62,7 +62,9 @@ def analyze_sleep_data(states, segment_name=""):
 
 def compare_sleep_data(folder_path):
     """Compare sleep data between pre-954.csv and pre-954_predictions-correct.csv"""
-    csv_files = [f for f in os.listdir(folder_path) if f.endswith('pre-954.csv') or f.endswith('pre-954_predictions-correct.csv')]
+    file_name = 'pre-954.csv'
+    file = file_name.split('.')[0]
+    csv_files = [f for f in os.listdir(folder_path) if f.endswith(f'{file_name}') or f.endswith(f'{file}_predictions-correct.csv')]
     full_comparison_results = []
     segment_comparison_results = []
     segment_data = {}

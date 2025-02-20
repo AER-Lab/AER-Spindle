@@ -80,8 +80,8 @@ def compare_files(folder_path):
                 else:
                     combined_confusion_matrix += misclassification_matrix
 
-                plot_confusion_matrix(misclassification_matrix, f"Confusion Matrix for {sheet_name}", matrix_pdf_pages)
-                plot_confusion_matrix(misclassification_matrix_freq, f"Confusion Matrix for {sheet_name} (Frequency)", matrix_pdf_pages)
+                # plot_confusion_matrix(misclassification_matrix, f"Confusion Matrix for {sheet_name}", matrix_pdf_pages)
+                # plot_confusion_matrix(misclassification_matrix_freq, f"Confusion Matrix for {sheet_name} (Frequency)", matrix_pdf_pages)
 
                 average_across_files.append(overall_accuracy)
                 print("Overall Accuracy: {:.2f}%".format(overall_accuracy))
@@ -104,7 +104,7 @@ def compare_files(folder_path):
         if combined_confusion_matrix is not None:
             # Normalize the combined confusion matrix again to ensure it's a proper percentage
             combined_confusion_matrix = combined_confusion_matrix.div(combined_confusion_matrix.sum(axis=1), axis=0) * 100
-            plot_confusion_matrix(combined_confusion_matrix, "Combined Confusion Matrix Across All Files", matrix_pdf_pages)
+            # plot_confusion_matrix(combined_confusion_matrix, "Combined Confusion Matrix Across All Files", matrix_pdf_pages)
     matrix_pdf_pages.close()
     loop_files_to_compare(folder_path, output_excel_path)
 
@@ -136,16 +136,16 @@ def plot_mismatches(prediction_file, label_file, pdf_pages):
         end_row = min((i + 1) * rows_per_plot, num_rows)
 
         # Plot the predictions and labels for the current segment
-        plt.figure(figsize=(12, 6))
-        plt.plot(range(start_row, end_row), combined['Prediction'][start_row:end_row].reset_index(drop=True), label='Prediction', color='blue')
-        plt.plot(range(start_row, end_row), combined['Label'][start_row:end_row].reset_index(drop=True), label='Label', color='green')
+        # plt.figure(figsize=(12, 6))
+        # plt.plot(range(start_row, end_row), combined['Prediction'][start_row:end_row].reset_index(drop=True), label='Prediction', color='blue')
+        # plt.plot(range(start_row, end_row), combined['Label'][start_row:end_row].reset_index(drop=True), label='Label', color='green')
 
-        plt.title(f"{(label_file_name)} - Predictions vs Labels (Segment {i + 1})")
-        plt.xlabel("Epoch # (2-hour segments)")
-        plt.ylabel("Sleep Stage")
-        plt.legend()
-        pdf_pages.savefig()  # Save the current figure to the PDF
-        plt.close()
+        # plt.title(f"{(label_file_name)} - Predictions vs Labels (Segment {i + 1})")
+        # plt.xlabel("Epoch # (2-hour segments)")
+        # plt.ylabel("Sleep Stage")
+        # plt.legend()
+        # pdf_pages.savefig()  # Save the current figure to the PDF
+        # plt.close()
     
 def loop_files_to_compare(folder_path, output_excel_path):
     """
