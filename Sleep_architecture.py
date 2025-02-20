@@ -61,60 +61,70 @@ def analyze_sleep_data(states, segment_name=""):
     }
 
 def compare_sleep_data(folder_path):
-    """Compare sleep data between pre-954.csv and pre-954_predictions-correct.csv"""
-    file_name = 'pre-954.csv'
-    file = file_name.split('.')[0]
-    csv_files = [f for f in os.listdir(folder_path) if f.endswith(f'{file_name}') or f.endswith(f'{file}_predictions-correct.csv')]
+    """Compare sleep data between original files and their predictions"""
+    # Find all prediction files and match with originals
+    prediction_files = [f for f in os.listdir(folder_path) 
+                       if f.endswith('_predictions-correct.csv')]
+    file_pairs = []
+    for pred_file in prediction_files:
+        orig_file = pred_file.replace('_predictions-correct.csv', '.csv')
+        if orig_file in os.listdir(folder_path):
+            file_pairs.append((orig_file, pred_file))
+        else:
+            print(f"Warning: Original file {orig_file} not found for {pred_file}")
+    
     full_comparison_results = []
     segment_comparison_results = []
     segment_data = {}
     
     ROWS_PER_2H = 1800  # 7200 seconds / 4 seconds per row
     
-    for csv_file in csv_files:
-        file_path = os.path.join(folder_path, csv_file)
-        df = pd.read_csv(file_path, header=None, names=['Time', 'State'])
-        main_data = df['State'].tolist()
-        
-        # Analyze full recording
-        full_analysis = analyze_sleep_data(main_data, f"{csv_file}")
-        full_analysis['File'] = csv_file
-        full_comparison_results.append(full_analysis)
-        
-        # Analyze 2-hour segments
-        num_segments = ceil(len(main_data) / ROWS_PER_2H)
-        for i in range(num_segments):
-            start_idx = i * ROWS_PER_2H
-            end_idx = min((i + 1) * ROWS_PER_2H, len(main_data))
-            corrected_data = main_data[start_idx:end_idx]
+    # Process each file pair
+    for orig_file, pred_file in file_pairs:
+        for csv_file in [orig_file, pred_file]:
+            file_path = os.path.join(folder_path, csv_file)
+            df = pd.read_csv(file_path, header=None, names=['Time', 'State'])
+            main_data = df['State'].tolist()
             
-            if len(corrected_data) > 0:  # Only analyze if segment has data
-                segment_analysis = analyze_sleep_data(corrected_data, 
-                                                    f"{csv_file}_segment_{i+1}")
-                segment_analysis['File'] = csv_file
-                segment_analysis['Segment_number'] = i + 1
-                segment_analysis['Start_hour'] = i * 2
-                segment_analysis['End_hour'] = min((i + 1) * 2, len(main_data) * 4 / 3600)
-                segment_comparison_results.append(segment_analysis)
+            # Analyze full recording
+            full_analysis = analyze_sleep_data(main_data, f"{csv_file}")
+            full_analysis['File'] = csv_file
+            full_comparison_results.append(full_analysis)
+            
+            # Analyze 2-hour segments
+            num_segments = ceil(len(main_data) / ROWS_PER_2H)
+            for i in range(num_segments):
+                start_idx = i * ROWS_PER_2H
+                end_idx = min((i + 1) * ROWS_PER_2H, len(main_data))
+                corrected_data = main_data[start_idx:end_idx]
                 
-                # Store segment data for individual sheets
-                segment_key = f"Segment_{i+1}"
-                if segment_key not in segment_data:
-                    segment_data[segment_key] = []
-                segment_data[segment_key].append(segment_analysis)
+                if len(corrected_data) > 0:
+                    segment_analysis = analyze_sleep_data(corrected_data, 
+                                                        f"{csv_file}_segment_{i+1}")
+                    segment_analysis['File'] = csv_file
+                    segment_analysis['Segment_number'] = i + 1
+                    segment_analysis['Start_hour'] = i * 2
+                    segment_analysis['End_hour'] = min((i + 1) * 2, len(main_data) * 4 / 3600)
+                    segment_comparison_results.append(segment_analysis)
+                    
+                    segment_key = f"Segment_{i+1}"
+                    if segment_key not in segment_data:
+                        segment_data[segment_key] = []
+                    segment_data[segment_key].append(segment_analysis)
     
     # Create Excel file with comparison sheets
     output_excel = os.path.join(folder_path, "sleep_data_comparison.xlsx")
     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-        # Full recording comparison results
-        pd.DataFrame(full_comparison_results).to_excel(writer, sheet_name='Full_Comparison', index=False)
-        # 2-hour segment comparison results
-        pd.DataFrame(segment_comparison_results).to_excel(writer, sheet_name='2h_Segment_Comparison', index=False)
-        # Individual segment sheets
+        pd.DataFrame(full_comparison_results).to_excel(writer, 
+                                                     sheet_name='Full_Comparison', 
+                                                     index=False)
+        pd.DataFrame(segment_comparison_results).to_excel(writer, 
+                                                        sheet_name='2h_Segment_Comparison',
+                                                        index=False)
         for segment_key, data in segment_data.items():
             pd.DataFrame(data).to_excel(writer, sheet_name=segment_key, index=False)
     
     print(f"Comparison exported to: {output_excel}")
 
 # Run the comparison
-compare_sleep_data(r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\Test-Hz_Comparisons_SanityCheck\ada2\ada_020625\sleep_architecture')
+compare_sleep_data(r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\Test-Hz_Comparisons_SanityCheck\ada2\ada_020625\sleep_architecture\4-files')

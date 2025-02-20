@@ -119,33 +119,29 @@ def correct_states(df):
 
             # If one want to remove single epoches of W during NR, uncomment the below. 
             # Correct single 'W' surrounded by 'NR' (NR-W-NR = NR-NR-NR)
-            # TODO: UNCOMMENT THIS BLOCK IF YOU WANT TO REMOVE SINGLE EPOCHS OF W DURING NR
+            # TODO: uncomment the below code to remove single epoches of W during NR
             if i > 0 and i < len(df) - 1 and df.loc[i, 'State'] == 'W' and df.loc[i - 1, 'State'] == 'NR' and df.loc[i + 1, 'State'] == 'NR':
                 df.loc[i, 'State'] = 'NR'
                 i += 1
                 
-            # Correct 3-4 episodes of 'R' preceded by at least 4 'NR' and followed by at least 2 'NR'
+            # Correct 3-4 episodes of 'R' surrounded by at least 4 'NR' on both sides
             if i > 3 and i < len(df) - 4:
-                # Check if current epoch is 'R'
-                if df.loc[i, 'State'] == 'R':
-                    # Find consecutive 'R' sequence
+                if df.loc[i, 'State'] == 'R' and df.loc[i + 1, 'State'] == 'NR':
                     start_r = i
-                    end_r = i
-                    while end_r + 1 < len(df) and df.loc[end_r + 1, 'State'] == 'R':
-                        end_r += 1
-                    
-                    r_length = end_r - start_r + 1
-                    
-                    # Check if R sequence is 3-4 epochs long
-                    if 3 <= r_length <= 4:
-                        # Check for 4 'NR' before
-                        if all(df.loc[start_r - k, 'State'] == 'NR' for k in range(1, 5)):
-                            # Check for 2 'NR' after
-                            if all(df.loc[end_r + k, 'State'] == 'NR' for k in range(1, 5)):
-                                # Convert R sequence to NR
-                                df.loc[start_r:end_r, 'State'] = 'NR'
-                                i = end_r + 1
-                                continue
+                    # Check for at least 4 'NR' after
+                    if all(df.loc[i + h, 'State'] == 'NR' for h in range(1, 5)):
+                        start_r2 = i
+                        end_r2 = i
+                        # Expand to find the full length of the 'R' sequence, up to 4 'R's
+                        while start_r < 0 and df.loc[start_r2 - 1, 'State'] == 'R' and (end_r2 - start_r2 + 1) < 4:
+                            end_r2 -= 1
+
+                        r_length2 = end_r2 - start_r2 + 1
+                        # Check if the sequence is prceeded by at least 4 'NR'
+                        if all(df.loc[start_r2 - 1 - k, 'State'] == 'NR' for k in range(1, 5)):
+                            # Correct the 'R' sequence to 'NR'
+                            df.loc[start_r2:end_r2, 'State'] = 'NR'
+                            i += 1
                             
                             
             # Correct 2-3 episodes of 'NR' surrounded by at least 4 'R' on both sides
@@ -185,10 +181,3 @@ def process_files(input_dir, output_dir):
             df_corrected = correct_states(df)
             df_corrected.to_csv(os.path.join(output_dir, file.replace('.csv', '-correct.csv')), header=False, index=False)
             print(f"Processed: {file}")
-
-
-if __name__ == '__main__':
-    input_dir = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\Test-Hz_Comparisons_SanityCheck\ada2\ada_020625\sleep_architecture'
-    output_dir = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\Test-Hz_Comparisons_SanityCheck\ada2\ada_020625\sleep_architecture'
-    process_files(input_dir, output_dir)
-    print("Processing complete.")
