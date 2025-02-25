@@ -137,8 +137,8 @@ def plot_mismatches(prediction_file, label_file, pdf_pages):
 
         # Plot the predictions and labels for the current segment
         plt.figure(figsize=(12, 6))
-        plt.plot(range(start_row, end_row), combined['Prediction'][start_row:end_row].reset_index(drop=True), label='Prediction', color='blue')
-        plt.plot(range(start_row, end_row), combined['Label'][start_row:end_row].reset_index(drop=True), label='Label', color='green')
+        plt.plot(range(start_row, end_row), combined['Prediction'][start_row:end_row].reset_index(drop=True).astype(str), label='Prediction', color='blue')
+        plt.plot(range(start_row, end_row), combined['Label'][start_row:end_row].reset_index(drop=True).astype(str), label='Label', color='green')
 
         plt.title(f"{(label_file_name)} - Predictions vs Labels (Segment {i + 1})")
         plt.xlabel("Epoch # (2-hour segments)")
