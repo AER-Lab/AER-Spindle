@@ -2,7 +2,7 @@
 The AER Lab introduces a customized implementation of the SPINDLE method (Sleep Phase Identification with Neural Networks for Domain-invariant LEarning), originally developed by Miladinović et al. (2019), which achieved remarkable accuracy rates of up to 99% in rodent sleep scoring. Our adaptation maintains the core methodological principles of the original SPINDLE framework while introducing a streamlined graphical user interface for enhanced accessibility and workflow automation with an accuracy rate of up to 97.25%. The system processes paired EEG/EMG recordings stored in EDF format alongside their corresponding time-labeled CSV files, automatically converting them into structured datasets suitable for model training.
 
 # Architecture
-- Building upon SPINDLE's CNN-HMM architecture 
+- Building upon SPINDLE's CNN architecture 
     - Our implementation:
         - Remains agnostic to changes in sleep patterns across time and frequency dimensions
         - Preserves original model parameters

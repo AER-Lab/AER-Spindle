@@ -127,4 +127,4 @@ def compare_sleep_data(folder_path):
     print(f"Comparison exported to: {output_excel}")
 
 # Run the comparison
-compare_sleep_data(r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\Test-Hz_Comparisons_SanityCheck\ada2\ada_020625\sleep_architecture\4-files')
+compare_sleep_data(r'path_to_folder')
