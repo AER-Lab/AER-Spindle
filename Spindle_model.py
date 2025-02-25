@@ -16,17 +16,17 @@ import time
 
 
 # Training Path
-path_for_training = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test\EMG_25Hz-50Hz'
+path_for_training = r'\path\to\training\edf\files'
 # Prediction Path
-folder_file_prediction = r'C:\Users\geosaad\Desktop\Su-EEG-EDF-DATA\test\EMG_25Hz-50Hz'
+folder_file_prediction = r'\path\to\prediction\edf\files'
 
 learning_rate = 0.00005
 epoch_num = 5
 drop_out_rate = 0.5
 batch_size_num = 100
 num_classes = 4
-# Model name SPINDLE_model_MM.pth AER-Model by Default
-model_name = 'SPINDLE_model_MM_EMG_25Hz-50Hz.pth'
+# Model name SPINDLE_MM.pth AER-Model by Default
+model_name = 'SPINDLE_MM.pth'
 
 
 #1.
@@ -45,6 +45,7 @@ SPINDLE_PREPROCESSING_PARAMS = {
     # num_neighbors is the number of neighboring epochs to include for context. 4 means, 2 on each side (including the current epoch, so total 5)
     'num_neighbors': 4,
     # EEG-filtering and EMG-filtering are dictionaries with 'lfreq' and 'hfreq' keys
+    # By default AER-settings are used
     'EEG-filtering': {'lfreq': 0.5, 'hfreq': 12},
     'EMG-filtering': {'lfreq': 25, 'hfreq': 50}
 }
