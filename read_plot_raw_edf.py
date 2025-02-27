@@ -42,6 +42,9 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
 
     # Get the sample frequency from metadata
     sample_frequency = meta_data[0]['sample_rate']
+    # if no sample_rate, try sample_frequency
+    if sample_frequency is None:
+        sample_frequency = meta_data[0]['sample_frequency']
     print("Sample frequency: ", sample_frequency, "Hz")
 
     # Create a time axis in the specified unit
@@ -195,6 +198,8 @@ def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high):
     signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
     print("Meta Data:", meta_data, "Meta Data 2:", meta_data2)
     fs = meta_data[0]['sample_rate']
+    if fs is None:
+        fs = meta_data[0]['sample_frequency']
     print("Sample frequency: ", fs, "Hz")
 
     # Bandpass filter the EEG and EMG channels
