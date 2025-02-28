@@ -4,6 +4,7 @@ from pyedflib import highlevel
 from scipy.signal import butter, sosfiltfilt, buttord
 import numpy as np
 
+
 # Define function to read and plot EDF file data V1
 def read_plot_raw_edf(edf_file, time_unit='minutes'):
     # Multiplier based on the chosen time unit
@@ -27,7 +28,9 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         return None
     # resample data to 256Hz
     resample_hz = 256
-    signals = highlevel.resample_signal(signals, meta_data, resample_hz)
+    from scipy.signal import resample
+    num_samples = int(len(signals[0]) * resample_hz / meta_data[0]['sample_frequency'])
+    signals = [resample(signal, num_samples) for signal in signals]
     print("Resampled data to 256Hz")
     # Convert signals to a DataFrame and transpose
     df = pd.DataFrame(signals).T
@@ -41,7 +44,7 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         print("There are ", channel_pairs, "pairs of channels in the dataframe")
 
     # Get the sample frequency from metadata
-    sample_frequency = meta_data[0]['sample_rate']
+    sample_frequency = meta_data[0]['sample_frequency']
     # if no sample_rate, try sample_frequency
     if sample_frequency is None:
         sample_frequency = meta_data[0]['sample_frequency']
@@ -60,7 +63,7 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
 
         # Plot channels with time axis
         plt.figure(figsize=(12, 8))
-        
+
         # Plot Channel 1
         plt.subplot(2, 1, 1)
         plt.plot(time_axis, channel1, linewidth=0.3)
@@ -79,12 +82,12 @@ def read_plot_raw_edf(edf_file, time_unit='minutes'):
         plt.show()
 
 # bandpass filter
-def bandpass_filter_channel(data, fs, lowcut, highcut, order=4, 
+def bandpass_filter_channel(data, fs, lowcut, highcut, order=4,
                             automatic_order=True, transition_ratio=0.2, debug=False):
     """
     Simplified dynamic bandpass filter for biosignals with optional automatic order selection,
     similar in functionality to MATLAB's bandpass function.
-    
+
     Parameters:
         data (np.ndarray): 1D signal array.
         fs (float): Sampling frequency in Hz.
@@ -96,10 +99,10 @@ def bandpass_filter_channel(data, fs, lowcut, highcut, order=4,
         transition_ratio (float): Ratio to calculate the transition band width (only used if
                                   automatic_order is True).
         debug (bool): If True, prints filter parameters for debugging.
-    
+
     Returns:
         np.ndarray: Filtered signal with zero-phase distortion.
-        
+
     Raises:
         ValueError: If the provided cutoff frequencies are invalid or if the final filter
                     order is outside the acceptable range [2, 30].
@@ -156,7 +159,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
       time_unit (str): Time unit label for x-axis.
     """
     plt.figure(figsize=(12, 12))
-    
+
     # Original EEG Plot
     plt.subplot(4, 1, 1)
     plt.plot(time_axis, orig_eeg, label="Original EEG", linewidth=0.3)
@@ -164,7 +167,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
     plt.xlabel(f"Time ({time_unit})")
     plt.ylabel("Amplitude")
     plt.legend()
-    
+
     # Filtered EEG Plot
     plt.subplot(4, 1, 2)
     plt.plot(time_axis, filt_eeg, label="Filtered EEG", linewidth=0.3)
@@ -172,7 +175,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
     plt.xlabel(f"Time ({time_unit})")
     plt.ylabel("Amplitude")
     plt.legend()
-    
+
     # Original EMG Plot
     plt.subplot(4, 1, 3)
     plt.plot(time_axis, orig_emg, label="Original EMG", linewidth=0.1)
@@ -180,7 +183,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
     plt.xlabel(f"Time ({time_unit})")
     plt.ylabel("Amplitude")
     plt.legend()
-    
+
     # Filtered EMG Plot
     plt.subplot(4, 1, 4)
     plt.plot(time_axis, filt_emg, label="Filtered EMG", linewidth=0.1)
@@ -188,7 +191,7 @@ def plot_comparison(time_axis, orig_eeg, filt_eeg, orig_emg, filt_emg, time_unit
     plt.xlabel(f"Time ({time_unit})")
     plt.ylabel("Amplitude")
     plt.legend()
-    
+
     plt.tight_layout()
     plt.show()
 
@@ -197,7 +200,7 @@ def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high):
     # Read the EDF file
     signals, meta_data, meta_data2 = highlevel.read_edf(edf_file)
     print("Meta Data:", meta_data, "Meta Data 2:", meta_data2)
-    fs = meta_data[0]['sample_rate']
+    fs = meta_data[0]['sample_frequency']
     if fs is None:
         fs = meta_data[0]['sample_frequency']
     print("Sample frequency: ", fs, "Hz")
@@ -226,5 +229,5 @@ def bandpass_plot_data(edf_file, eeg_low, eeg_high, emg_low, emg_high):
 
 
 
-    
-    
+
+
