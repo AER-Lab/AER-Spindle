@@ -27,6 +27,7 @@ The AER Lab introduces a customized implementation of the SPINDLE method (Sleep 
 1. The latest stable Python version [3.1x+, at least 3.10]
 2. Download Visual Studio Code (VSC) [here](https://code.visualstudio.com/download)
 3. Install Git from [here](https://git-scm.com/downloads) OR Conda/Miniconda from [here](https://docs.anaconda.com/miniconda/install/)
+4. Upgrade Microsoft C++ Build Tools to 14.0+ [here](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
 ## Setup
 

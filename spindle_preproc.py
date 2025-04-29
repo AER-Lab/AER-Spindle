@@ -26,7 +26,7 @@ class SpindlePreproc:
                  eeg_idx=np.array([]),
                  eog_idx=np.array([]),
                  emg_idx=np.array([])):
-        
+
         # Initial setup for the preprocessing and logging
         logger.debug('preprocessing data ...')
         logger.debug(f'eeg indices: {eeg_idx} and emg indices: {emg_idx} '
@@ -36,7 +36,10 @@ class SpindlePreproc:
         downsampled_signals = []
         print("SIGNAL HEADER ###: ", signal_header)
         for i, sig in enumerate(all_signals):
-            srate = signal_header[i]['sample_rate']
+            srate = signal_header[i]['sample_frequency']
+            # if no sample_rate try sample_frequency
+            if srate is None:
+                srate = signal_header[i]['sample_frequency']
             if srate != self.target_srate:
                 downsampled_signals.append(utils.resample(
                     sig[np.newaxis], srate, self.target_srate))
@@ -64,14 +67,14 @@ class SpindlePreproc:
                                    lowcutoff=self.emg_filtering['lfreq'],
                                    highcutoff=self.emg_filtering['hfreq'],
                                    replicate=np.shape(eeg_spectrograms)[1])
-        
+
         print("COMPRESS-SPEC-Spectrogram EEG Shape: ", eeg_spectrograms.shape)
         print("COMPRESS-SPEC-Spectrogram EMG Shape: ", emg_spectrogram.shape)
-        
+
         # Concatenate the EEG and EMG spectrograms
         specs = [x for x in [eeg_spectrograms, emg_spectrogram] if x.size > 0]
         specs = np.concatenate(specs, axis=0)
-        # Normalize the spectrograms 
+        # Normalize the spectrograms
         specs = utils.normalise_spectrograms(specs)
         print("NORMALIZE-SPEC-Spectrogram shapes: ", specs.shape)
 
@@ -88,15 +91,15 @@ class SpindlePreproc:
         return data
     # Str is used to print the parameters of the class
     def __str__(self):
-        return f"""Preprocessing class SpindlePreprocessing replicates the 
+        return f"""Preprocessing class SpindlePreprocessing replicates the
         exact preprocessing introduced in the paper.
         parameters:
         target_srate: {self.target_srate}
         stride: {self.stride}
         time_interval: {self.time_interval}
         num_neighbors: {self.num_neighbors}
-        eeg_filtering: lfreq={self.eeg_filtering['lfreq']}, 
+        eeg_filtering: lfreq={self.eeg_filtering['lfreq']},
                        hfreq={self.eeg_filtering['hfreq']}
-        emg_filtering: lfreq={self.emg_filtering['lfreq']}, 
+        emg_filtering: lfreq={self.emg_filtering['lfreq']},
                        hfreq={self.emg_filtering['hfreq']}
         """
