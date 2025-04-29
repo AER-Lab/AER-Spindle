@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from tkinter import font as tkfont
-from read_plot_raw_edf import bandpass_plot_data
-from load_data_Training import load_data_and_labels
-from train_model import train_model
+from UtilityFunctions.read_plot_raw_edf import bandpass_plot_data
+from UtilityFunctions.load_data_Training import load_data_and_labels
+from UtilityFunctions.train_model import train_model
 from torch.utils.data import DataLoader, TensorDataset
 from Spindle import SpindleGraph
 import torch.nn as nn
@@ -11,11 +11,11 @@ import torch.optim as optim
 import torch
 import os
 import pandas as pd
-from compare_prediction_accuracy import compare_files
-from load_data_prediction import load_data_prediction
-from predict_sleep_stages import predict_sleep_stages
+from UtilityFunctions.compare_prediction_accuracy import compare_files
+from UtilityFunctions.load_data_prediction import load_data_prediction
+from UtilityFunctions.predict_sleep_stages import predict_sleep_stages
 import time
-from correct_states import process_files
+from UtilityFunctions.correct_states import process_files
 import glob
 
 
@@ -70,7 +70,7 @@ class ToolTip:
         if self.tip_window:
             self.tip_window.destroy()
             self.tip_window = None
-
+print("Starting Spindle GUI...")
 # Function to handle folder selection and running stats/plots
 def Read_plot_EDF():
     edf_file = filedialog.askopenfilename(title="Select EDF File", filetypes=[("EDF files", "*.edf")])
@@ -89,18 +89,18 @@ def Read_plot_EDF():
 def Training():
     # Step 1: User selects folder
     folder_path = filedialog.askdirectory(title="Select Folder for Training")
-    
+
     if folder_path:
         # Step 2: Prompt user for model name and destination folder
         model_name = simpledialog.askstring("Model Name", "Enter model name (default: SPINDLE_model-test):", initialvalue="SPINDLE_model-test")
         if model_name is None:
             model_name = 'SPINDLE_model-test'  # If user cancels, use default
-            
+
         destination_folder = filedialog.askdirectory(title="Select Destination Folder for Model")
         if not destination_folder:
             messagebox.showwarning("No Folder Selected", "Please select a destination folder to save the model.")
             return
-        
+
         model_name = os.path.join(destination_folder, model_name + ".pth")
         # Prompt user for EEG and EMG filter parameters
         eeg_low = simpledialog.askfloat("Filter Parameters", "Enter EEG low-pass cutoff (Hz):", initialvalue=0.5)
@@ -139,11 +139,11 @@ def Training():
         progress_window = tk.Toplevel()
         progress_window.title("Training Progress")
         progress_window.geometry("400x100")
-        
+
         # Progress bar widget
         progress = ttk.Progressbar(progress_window, orient="horizontal", length=300, mode="determinate")
         progress.pack(pady=20)
-        
+
         # Label to display progress percentage
         progress_label = tk.Label(progress_window, text="0% completed")
         progress_label.pack()
@@ -163,7 +163,7 @@ def Training():
         print(f"Trained using {len(edf_files)} EDF files \n{edf_files} \n")
 
 
-        
+
 
         params_txt_path = model_name.replace('.pth', '.txt')
         with open(params_txt_path, 'w') as f:
@@ -175,7 +175,7 @@ def Training():
             for key, value in SPINDLE_PREPROCESSING_PARAMS.items():
                 f.write(f"{key}: {value}\n")
         print(f"Spindle processing parameters saved successfully as {params_txt_path}")
-        
+
         # replace backslashes with forward slashes for Windows paths
         with open(params_txt_path, 'r') as f:
             txt = f.read()
@@ -183,10 +183,10 @@ def Training():
         txt = txt.replace('//', '/')
         with open(params_txt_path, 'w') as f:
             f.write(txt)
-        
+
         # Close the progress window
         progress_window.destroy()
-        
+
     else:
         messagebox.showwarning("No Folder Selected", "Please select a folder to continue.")
 
@@ -196,7 +196,7 @@ def Prediction():
         params = {}
         with open(params_txt_path, 'r') as f:
             lines = f.readlines()
-        
+
         # Find the start of the parameters section
         start_idx = None
         for idx, line in enumerate(lines):
@@ -206,7 +206,7 @@ def Prediction():
         if start_idx is None:
             print("Header 'Spindle preprocessing parameters:' not found.")
             return params
-        
+
         # Parse parameter lines (key: value)
         for line in lines[start_idx:]:
             stripped = line.strip()
@@ -222,14 +222,14 @@ def Prediction():
         return params
     # Step 1: Ask user to select the model weights file
     model_weights_file = filedialog.askopenfilename(title="Select Model Weights File", filetypes=[("PyTorch Model Files", "*.pth")])
-    
+
     if not model_weights_file:
         messagebox.showwarning("No File Selected", "Please select a model weights file.")
         return
-    
+
     # Step 2: Ask user to select the folder containing the prediction files
     folder_file_prediction = filedialog.askdirectory(title="Select Folder to predict files")
-    
+
     if not folder_file_prediction:
         messagebox.showwarning("No Folder Selected", "Please select a folder for prediction files.")
         return
@@ -276,15 +276,15 @@ def Prediction():
     model, params = load_model_weights(model, model_weights_file)
     print("Model weights loaded successfully:", model)
     print("Spindle preprocessing parameters:", params)
-    
-    
-    
+
+
+
     #  # Prompt user for EEG and EMG filter parameters
     eeg_low = params['EEG-filtering']['lfreq']
     eeg_high = params['EEG-filtering']['hfreq']
     emg_low = params['EMG-filtering']['lfreq']
     emg_high = params['EMG-filtering']['hfreq']
-    
+
     # eeg_low = simpledialog.askfloat("Filter Parameters", "Enter EEG low-pass cutoff (Hz):", initialvalue=0.5)
     # eeg_high = simpledialog.askfloat("Filter Parameters", "Enter EEG high-pass cutoff (Hz):", initialvalue=12)
     # emg_low = simpledialog.askfloat("Filter Parameters", "Enter EMG low-pass cutoff (Hz):", initialvalue=25)
@@ -326,7 +326,7 @@ def Prediction():
         progress_value = (file_idx / total_files) * 100
         progress['value'] = progress_value
         progress_label.config(text=f"{progress_value:.2f}% completed")
-        
+
         # Calculate elapsed time and estimate time remaining
         elapsed_time = time.time() - start_time
         avg_time_per_file = elapsed_time / file_idx
@@ -373,7 +373,7 @@ def Prediction():
     # Close progress window once predictions are complete
     progress_window.destroy()
     messagebox.showinfo("Prediction", "Predictions completed successfully.")
-    
+
 
 # Create the main window
 root = tk.Tk()
@@ -400,7 +400,7 @@ instructions_font = tkfont.Font(family="Helvetica", size=10)
 
 # Step 1: Visualize Data
 step1_label = tk.Label(root, text="Step 1: Plot raw and filtered EEG/EMG data", font=step_font, fg="#F7DC6F", bg="#2E4053")
-instructions1_label = tk.Label(root, text="Select an EDF file, with one EEG and one EMG channel, then choose the band-pass filter parameters. \n", 
+instructions1_label = tk.Label(root, text="Select an EDF file, with one EEG and one EMG channel, then choose the band-pass filter parameters. \n",
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step1_label.pack(pady=(10, 5))
 instructions1_label.pack(pady=(5, 5))
@@ -411,7 +411,7 @@ read_raw_edf_button.pack(pady=5)
 # Step 2: Train Model
 step2_label = tk.Label(root, text="Step 2: Train your model using Spindle parameters (optional)", font=step_font, fg="#F7DC6F", bg="#2E4053")
 instructions2_label = tk.Label(root, text="Train a model on edf files with matching csv annotations. The edf & csv files should have corresponding names [file_1.edf, file_1.csv]. CSVs must have labels in the second column [(W, NR, R) or (2, 3, 1)]."
-                                           "\n 1) Select a folder containing the edf/csv files. \n 2) Name your model. \n 3) Select an output folder for the trained model weight file.", 
+                                           "\n 1) Select a folder containing the edf/csv files. \n 2) Name your model. \n 3) Select an output folder for the trained model weight file.",
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step2_label.pack(pady=(10, 5))
 instructions2_label.pack(pady=(5, 5))
@@ -424,7 +424,7 @@ current_directory = os.getcwd()
 # Step 3: Predict States
 step3_label = tk.Label(root, text="Step 3: Predict sleep/wake states", font=step_font, fg="#F7DC6F", bg="#2E4053")
 instructions3_label = tk.Label(root, text=f"Use either your trained model or the 'AER Lab' model located at: \n {current_directory}\\Spindle_MM.pth to predict states."
-                                           "\n1) Select the model weights file. 2) Indicate the folder containing the edf files for predictions.", 
+                                           "\n1) Select the model weights file. 2) Indicate the folder containing the edf files for predictions.",
                                 font=instructions_font, fg="white", bg="#2E4053", wraplength=500)
 step3_label.pack(pady=(10, 5))
 instructions3_label.pack(pady=(5, 5))
@@ -445,12 +445,12 @@ def correct_states_handler():
     if not input_folder:
         messagebox.showwarning("No Input Folder", "Please select an input folder.")
         return
-        
+
     output_folder = filedialog.askdirectory(title="Select Output Folder for Corrected States")
     if not output_folder:
         messagebox.showwarning("No Output Folder", "Please select an output folder.")
         return
-        
+
     process_files(input_folder, output_folder)
     messagebox.showinfo("Success", "States corrected successfully!")
 

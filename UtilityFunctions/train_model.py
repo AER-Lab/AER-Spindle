@@ -1,4 +1,4 @@
-from utils import classification_accuracy
+from .utils import classification_accuracy
 import time
 def train_model(model, criterion, optimizer, train_loader, epochs=10, progress=None, label=None, time_label=None, start_time=None):
     total_batches = len(train_loader)

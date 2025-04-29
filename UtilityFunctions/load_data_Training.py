@@ -3,10 +3,10 @@ import glob
 import numpy as np
 import pandas as pd
 import torch
-from preprocess_plot_spectrograms import preprocess_and_plot_edf
+from .preprocess_and_plot_edf import preprocess_and_plot_edf
 import torch
 
-    
+
 def map_labels(label):
     if label == 'W' or label == 'W*' or label==2:
         return 0
@@ -16,7 +16,7 @@ def map_labels(label):
         return 2
     else:
         raise ValueError(f"Unexpected label: {label}")
-    
+
 
 def load_data_and_labels(folder_path, params):
     all_spectrograms = []
@@ -31,7 +31,7 @@ def load_data_and_labels(folder_path, params):
         print("Data Shape for {}: ".format(base_name), data.shape)
         # Append the 4D array directly to the list
         all_spectrograms.append(data)
-            
+
         # Read and map labels, time and label
         labels_df = pd.read_csv(label_file, header=None, names=['time', 'label'])
         labels = labels_df['label'].apply(map_labels).values
@@ -43,20 +43,20 @@ def load_data_and_labels(folder_path, params):
         if len(labels) != num_epochs:
             raise ValueError("Number of epochs does not match the number of labels", "Labels:",len(labels), "Epoch:", num_epochs, "File:", base_name)
 
- 
+
         all_labels.append(labels)
-    
+
     # Concatenate along the first axis
     all_spectrograms = np.concatenate(all_spectrograms, axis=0)
     all_labels = np.concatenate(all_labels, axis=0)
-    
+
     print("All spectrograms shape: ", all_spectrograms.shape)
     print("All labels shape: ", all_labels.shape)
-    
+
     # Convert to PyTorch tensors
     all_spectrograms = torch.tensor(all_spectrograms, dtype=torch.float32)
     all_labels = torch.tensor(all_labels, dtype=torch.long)
-    
+
     return all_spectrograms, all_labels
 
 if __name__ == "__main__":

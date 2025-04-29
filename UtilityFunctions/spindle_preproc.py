@@ -1,9 +1,9 @@
 import numpy as np
 import logging
-import utils
-from utils import get_spectrograms as get_specs
-from utils import compress_spectrograms as compress
-from utils import compress_and_replicate_emg as comp_emg
+from UtilityFunctions import utils
+from UtilityFunctions.utils import get_spectrograms as get_specs
+from UtilityFunctions.utils import compress_spectrograms as compress
+from UtilityFunctions.utils import compress_and_replicate_emg as comp_emg
 
 
 logger = logging.getLogger('Spindle-AER' + '.' + __name__)
