@@ -10,6 +10,7 @@ SPINDLE_MM_*
 # C extensions
 *.so
 
+*.docx
 # Distribution / packaging
 .Python
 build/
